@@ -1,10 +1,19 @@
 #!/usr/bin/env python
-import subprocess
+import yaml
 import time
 import random
 from pynput.keyboard import Key, Listener
+import pexpect
+import sys
 
 PROMPT = "howto-kubernetes.info - Docker Tutorial $ "
+
+def load_playbook():
+    playbook = open("playbook", "r")
+    commands = []
+    for command in playbook:
+        commands.append(command.strip()) 
+    return(commands)
 
 def replace_vars(string):
     keys = globals().keys()
@@ -33,39 +42,32 @@ listener = Listener(on_press=on_press)
 try:
     listener.start()
 except MyException as e:
+    print("Listener exception")
     pass
 
-print(PROMPT, end="")
-scripts=open("screenplay", "r")
-
-for script in scripts:
+playbook = load_playbook()
+for cmd in playbook:
     try:
-        tmp = script.split()
-        if len(tmp) > 1:
-            for var in tmp[1:]:
-                key,value = var.split(":")
-                globals().update({key:value})
-        command = open("scripts/"+ tmp[0], "r") 
-        cmd = command.read()
         cmd = replace_vars(cmd).strip()
-        if SPEED == "fast":
-            #print(cmd.strip())
-            pass
+        if cmd[0] == "_":
+            try: 
+                cmd = cmd[1:]
+                print_slow(cmd.strip())
+                child = pexpect.pty_spawn.spawn(cmd.strip(), encoding='utf-8')
+                child.interact(escape_character='\x1d', input_filter=None, output_filter=None)
+                child.close()
+            except:
+               pass
         else:
+            tmp = '/bin/bash -c "' + cmd.strip() + '"'
             print_slow(cmd.strip())
-        ## FIX ME! shell=True is a security risk, but nedded for commands like
-        ## echo FROM ubuntu >> Dockerfile
-        process = subprocess.run(cmd.strip(), shell=True, capture_output=True)
-        print(process.stdout.decode('utf-8'))
-        if len(process.stderr) > 0:
-            print(process.stderr.decode('utf-8'))
+            child = pexpect.spawn(tmp, logfile=sys.stdout, encoding='utf-8')
+            child.expect(pexpect.EOF)
+            child.close()
         print(PROMPT, flush=True, end="")
         while(WAIT):
             pass
             time.sleep(0.3)
         WAIT=True
-        SPEED = "slow"
     except MyException as e:
-        print("AAAAAAA")
         print(e)
-        pass

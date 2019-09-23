@@ -1,0 +1,29 @@
+cat data/begin
+ping -c 3 localhost  && ping -c 3 google.com
+cat config.yaml
+echo "hallo" | sha256sum 
+echo mal schauen wo das hinkommt1  > testfile
+echo mal schauen wo das hinkommt2  >> testfile
+ls -la
+_docker run --name test -it ubuntu 
+_docker attach test 
+docker --help
+docker image --help
+docker container --help
+docker container ls --help
+ps --help
+_man ps
+docker container ls --help
+_man docker-container-ls
+docker --help
+docker imange --help
+_man docker-images
+docker image ls --help
+_man docker-image-ls
+docker container run --help
+_man docker-container-run
+docker run --help
+_man docker-run
+dpkg -L docker-ce-cli | grep man
+_man dockerfile
+firefox https://docs.docker.com 

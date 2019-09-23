@@ -1,5 +1,0 @@
-begin SPEED:fast
-run_ubuntu NAME:stern IMAGE:ubuntu
-docker-container-ls
-docker-container-ls-all
-dockerfile
