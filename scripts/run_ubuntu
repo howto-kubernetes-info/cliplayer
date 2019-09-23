@@ -1,0 +1,1 @@
+docker run --name __NAME__ -d __IMAGE__
