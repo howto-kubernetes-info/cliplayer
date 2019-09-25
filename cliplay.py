@@ -54,6 +54,7 @@ for cmd in playbook:
                 cmd = cmd[1:]
                 print_slow(cmd.strip())
                 child = pexpect.pty_spawn.spawn(cmd.strip(), encoding='utf-8')
+                child.setwinsize(40, 79)
                 child.interact(escape_character='\x1d', input_filter=None, output_filter=None)
                 child.close()
             except:
@@ -62,6 +63,7 @@ for cmd in playbook:
             tmp = '/bin/bash -c "' + cmd.strip() + '"'
             print_slow(cmd.strip())
             child = pexpect.spawn(tmp, logfile=sys.stdout, encoding='utf-8')
+            child.setwinsize(40, 79)
             child.expect(pexpect.EOF)
             child.close()
         print(PROMPT, flush=True, end="")
