@@ -6,7 +6,7 @@ from pynput.keyboard import Key, Listener
 import pexpect
 import sys
 
-PROMPT = "howto-kubernetes.info - Docker Tutorial $ "
+PROMPT = "\033[94mhowto-kubernetes.info - \033[91mDocker Tutorial \033[0m$ "
 
 def load_playbook():
     playbook = open("playbook", "r")
