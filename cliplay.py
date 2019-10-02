@@ -5,6 +5,7 @@ import random
 from pynput.keyboard import Key, Listener
 import pexpect
 import sys
+import subprocess
 
 PROMPT = "\033[94mhowto-kubernetes.info - \033[91mDocker Tutorial \033[0m$ "
 
@@ -47,6 +48,9 @@ except MyException as e:
 
 playbook = load_playbook()
 for cmd in playbook:
+
+    rows, columns = subprocess.check_output(['stty', 'size']).decode().split()
+
     try:
         cmd = replace_vars(cmd).strip()
         if cmd[0] == "_":
@@ -54,16 +58,15 @@ for cmd in playbook:
                 cmd = cmd[1:]
                 print_slow(cmd.strip())
                 child = pexpect.pty_spawn.spawn(cmd.strip(), encoding='utf-8', timeout=300)
-                child.setwinsize(40, 79)
+                child.setwinsize(int(rows), int(columns))
                 child.interact(escape_character='\x1d', input_filter=None, output_filter=None)
                 child.close()
             except:
                pass
         else:
-            tmp = '/bin/bash -c "' + cmd.strip() + '"'
             print_slow(cmd.strip())
-            child = pexpect.spawn(tmp, logfile=sys.stdout, encoding='utf-8', timeout=300)
-            child.setwinsize(40, 79)
+            child = pexpect.spawn('/bin/bash', ['-c', cmd.strip()], logfile=sys.stdout, encoding='utf-8', timeout=300)
+            child.setwinsize(int(rows), int(columns))
             child.expect(pexpect.EOF)
             child.close()
         print(PROMPT, flush=True, end="")
