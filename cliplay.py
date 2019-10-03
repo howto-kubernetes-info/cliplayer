@@ -61,6 +61,17 @@ for cmd in playbook:
                 child.setwinsize(int(rows), int(columns))
                 child.interact(escape_character='\x1d', input_filter=None, output_filter=None)
                 child.close()
+                print(PROMPT, flush=True, end="")
+            except:
+               pass
+        elif cmd[0] == "+":
+            try: 
+                cmd = '/bin/bash --rcfile <(echo "PS1=' + "'" + PROMPT + "'" +'")'
+                print("\033[0K\r", flush=True, end="")
+                child = pexpect.pty_spawn.spawn('/bin/bash', ['-c', cmd], encoding='utf-8', timeout=300)
+                child.setwinsize(int(rows), int(columns))
+                child.interact(escape_character='\x1d', input_filter=None, output_filter=None)
+                child.close()
             except:
                pass
         else:
@@ -69,7 +80,7 @@ for cmd in playbook:
             child.setwinsize(int(rows), int(columns))
             child.expect(pexpect.EOF)
             child.close()
-        print(PROMPT, flush=True, end="")
+            print(PROMPT, flush=True, end="")
         time.sleep(1)
         while(WAIT):
             pass
