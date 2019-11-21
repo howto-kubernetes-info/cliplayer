@@ -85,6 +85,23 @@ for cmd in playbook:
                 WAIT=True
             except:
                pass
+        elif cmd[0] == "=":
+            try: 
+                cmd = cmd[1:]
+                cmd_1, cmd_2 = cmd.split("$$$")
+                child = pexpect.spawn('/bin/bash', ['-c', cmd_1.strip()], logfile=None, encoding='utf-8', timeout=300)
+                child.setwinsize(int(rows), int(columns))
+                child.expect(pexpect.EOF)
+                child.close()
+                cmd = cmd_2.replace("VAR",child.before.strip())
+                print_slow(cmd.strip())
+                child = pexpect.spawn('/bin/bash', ['-c', cmd.strip()], logfile=sys.stdout, encoding='utf-8', timeout=300)
+                child.setwinsize(int(rows), int(columns))
+                child.expect(pexpect.EOF)
+                child.close()
+                print(PROMPT, flush=True, end="")
+            except:
+               pass
         elif cmd[0] == "+":
             try: 
                 cmd = '/bin/bash --rcfile <(echo "PS1=' + "'" + PROMPT + "'" +'")'
