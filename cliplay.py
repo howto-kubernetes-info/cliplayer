@@ -6,6 +6,8 @@ from pynput.keyboard import Key, Listener
 import pexpect
 import sys
 import subprocess
+import signal
+import os
 
 PROMPT = "\033[94mhowto-kubernetes.info - \033[91mDocker Tutorial \033[0m$ "
 
@@ -38,6 +40,24 @@ def on_press(key):
     if key == Key.shift_l or key == Key.shift_r:
         global WAIT
         WAIT=False
+
+workdir = ""
+def signal_handler(sig, frame):
+    print('\nYou stopped the tutorial with Ctrl+C!')
+    print("Tutorial Cleanup!")
+    print("Do you want to remove the following directory? ")
+    dirpath = os.getcwd()
+    print(dirpath)
+    i = input("Remove?: ")
+    if i.lower() in ['y', 'yes']:
+        print("I clean up the remains.")
+        os.system('rm -rf '+ dirpath )
+        print("Goodbye!")
+    else:
+        print("I dont' clean up. Goodbye!")
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, signal_handler)
 
 listener = Listener(on_press=on_press)
 try:
@@ -72,6 +92,14 @@ for cmd in playbook:
                 child.setwinsize(int(rows), int(columns))
                 child.interact(escape_character='\x1d', input_filter=None, output_filter=None)
                 child.close()
+            except:
+               pass
+        elif cmd[0] == "*":
+            try: 
+                path = cmd[1:]
+                os.makedirs(path, exist_ok=True)
+                os.chdir(path)
+                workdir = path
             except:
                pass
         else:
