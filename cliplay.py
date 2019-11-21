@@ -82,6 +82,7 @@ for cmd in playbook:
                 child.interact(escape_character='\x1d', input_filter=None, output_filter=None)
                 child.close()
                 print(PROMPT, flush=True, end="")
+                WAIT=True
             except:
                pass
         elif cmd[0] == "+":
@@ -92,6 +93,7 @@ for cmd in playbook:
                 child.setwinsize(int(rows), int(columns))
                 child.interact(escape_character='\x1d', input_filter=None, output_filter=None)
                 child.close()
+                WAIT=True
             except:
                pass
         elif cmd[0] == "*":
