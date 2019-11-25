@@ -37,7 +37,8 @@ WAIT=True
 class MyException(Exception): pass
 
 def on_press(key):
-    if key == Key.shift_l or key == Key.shift_r:
+    #if key == Key.shift_l or key == Key.shift_r:
+    if key == Key.scroll_lock:
         global WAIT
         WAIT=False
 
