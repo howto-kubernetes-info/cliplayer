@@ -18,13 +18,6 @@ def load_playbook():
         commands.append(command.strip()) 
     return(commands)
 
-def replace_vars(string):
-    keys = globals().keys()
-    for key in list(keys):
-        if key.isupper():
-            string = string.replace("__" + key + "__", str(globals().get(key)))
-    return string
-
 def print_slow(str):
     for letter in str:
         print(letter, flush=True, end="")
@@ -73,7 +66,6 @@ for cmd in playbook:
     rows, columns = subprocess.check_output(['stty', 'size']).decode().split()
 
     try:
-        cmd = replace_vars(cmd).strip()
         if cmd[0] == "_":
             try: 
                 cmd = cmd[1:]
