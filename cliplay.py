@@ -8,12 +8,38 @@ import sys
 import subprocess
 import signal
 import os
+import argparse
 
-PROMPT = "\033[94mhowto-kubernetes.info - \033[91mGit Training \033[0m$ "
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "-p",
+    "--prompt",
+    default="\033[94mhowto-kubernetes.info \033[92m- \033[91mKubernetes Training \033[0m$ ",
+    help="prompt to use with playbook. Build it like a normal $PS1 prompt.",
+)
+parser.add_argument(
+    "-n",
+    "--next-key",
+    default="scroll_lock",
+    help="key to press for next command. Default: scroll_lock",
+)
+parser.add_argument(
+    "playbook",
+    nargs="?",
+    default="./playbook",
+    help="path and name to playbook. Default: ./playbook",
+)
+args = parser.parse_args()
+
+PROMPT = args.prompt
 
 
 def load_playbook():
-    playbook = open("playbook", "r")
+    try:
+        playbook = open(args.playbook, "r")
+    except Exception as e:
+        print("You need to provide a playbook")
+        sys.exit(0)
     commands = []
     for command in playbook:
         commands.append(command.strip())
