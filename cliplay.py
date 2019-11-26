@@ -9,7 +9,7 @@ import subprocess
 import signal
 import os
 
-PROMPT = "\033[94mhowto-kubernetes.info - \033[91mDocker Tutorial \033[0m$ "
+PROMPT = "\033[94mhowto-kubernetes.info - \033[91mGit Training \033[0m$ "
 
 def load_playbook():
     playbook = open("playbook", "r")
@@ -86,6 +86,8 @@ for cmd in playbook:
                 WAIT=True
             except:
                pass
+        elif cmd[0] == "!":
+            continue
         elif cmd[0] == "=":
             try: 
                 cmd = cmd[1:]
