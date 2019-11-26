@@ -16,6 +16,10 @@ When you holding lectures or recording screencast you often need to devide your 
 
 Hint: You need a playbook in the directory you execute the cliplayer command
 
+You execute the next line in the playbook by pressing the "scroll lock" key
+
+You can stop the playbook by pressing Ctrl - C 
+
 ##Playbook Options
 
 1. " "  
