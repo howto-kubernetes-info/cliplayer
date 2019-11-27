@@ -54,9 +54,6 @@ def print_slow(str):
     print("")
 
 
-WAIT = True
-
-
 class MyException(Exception):
     pass
 
@@ -66,9 +63,6 @@ def on_press(key):
     if key == Key.scroll_lock:
         global WAIT
         WAIT = False
-
-
-workdir = ""
 
 
 def signal_handler(sig, frame):
@@ -87,54 +81,98 @@ def signal_handler(sig, frame):
     sys.exit(0)
 
 
-signal.signal(signal.SIGINT, signal_handler)
+WAIT = ""
 
-listener = Listener(on_press=on_press)
-try:
-    listener.start()
-except MyException as e:
-    print("Listener exception")
-    pass
 
-playbook = load_playbook()
-for cmd in playbook:
+def main():
+    global WAIT
+    WAIT = True
 
-    rows, columns = subprocess.check_output(["stty", "size"]).decode().split()
+    signal.signal(signal.SIGINT, signal_handler)
 
+    listener = Listener(on_press=on_press)
     try:
-        if cmd[0] == "_":
-            try:
-                cmd = cmd[1:]
-                print_slow(cmd.strip())
-                child = pexpect.pty_spawn.spawn(
-                    cmd.strip(), encoding="utf-8", timeout=300
-                )
-                child.setwinsize(int(rows), int(columns))
-                child.interact(
-                    escape_character="\x1d", input_filter=None, output_filter=None
-                )
-                child.close()
-                print(PROMPT, flush=True, end="")
-                WAIT = True
-            except:
-                pass
-        elif cmd[0] == "!":
-            continue
-        elif cmd[0] == "=":
-            try:
-                cmd = cmd[1:]
-                cmd_1, cmd_2 = cmd.split("$$$")
-                child = pexpect.spawn(
-                    "/bin/bash",
-                    ["-c", cmd_1.strip()],
-                    logfile=None,
-                    encoding="utf-8",
-                    timeout=300,
-                )
-                child.setwinsize(int(rows), int(columns))
-                child.expect(pexpect.EOF)
-                child.close()
-                cmd = cmd_2.replace("VAR", child.before.strip())
+        listener.start()
+    except MyException as e:
+        print("Listener exception")
+        pass
+
+    playbook = load_playbook()
+    print(PROMPT, flush=True, end="")
+    for cmd in playbook:
+        rows, columns = subprocess.check_output(["stty", "size"]).decode().split()
+
+        try:
+            if cmd[0] == "_":
+                try:
+                    cmd = cmd[1:]
+                    print_slow(cmd.strip())
+                    child = pexpect.pty_spawn.spawn(
+                        cmd.strip(), encoding="utf-8", timeout=300
+                    )
+                    child.setwinsize(int(rows), int(columns))
+                    child.interact(
+                        escape_character="\x1d", input_filter=None, output_filter=None
+                    )
+                    child.close()
+                    print(PROMPT, flush=True, end="")
+                    WAIT = True
+                except:
+                    pass
+            elif cmd[0] == "!":
+                continue
+            elif cmd[0] == "=":
+                try:
+                    cmd = cmd[1:]
+                    cmd_1, cmd_2 = cmd.split("$$$")
+                    child = pexpect.spawn(
+                        "/bin/bash",
+                        ["-c", cmd_1.strip()],
+                        logfile=None,
+                        encoding="utf-8",
+                        timeout=300,
+                    )
+                    child.setwinsize(int(rows), int(columns))
+                    child.expect(pexpect.EOF)
+                    child.close()
+                    cmd = cmd_2.replace("VAR", child.before.strip())
+                    print_slow(cmd.strip())
+                    child = pexpect.spawn(
+                        "/bin/bash",
+                        ["-c", cmd.strip()],
+                        logfile=sys.stdout,
+                        encoding="utf-8",
+                        timeout=300,
+                    )
+                    child.setwinsize(int(rows), int(columns))
+                    child.expect(pexpect.EOF)
+                    child.close()
+                    print(PROMPT, flush=True, end="")
+                except:
+                    pass
+            elif cmd[0] == "+":
+                try:
+                    cmd = '/bin/bash --rcfile <(echo "PS1=' + "'" + PROMPT + "'" + '")'
+                    print("\033[0K\r", flush=True, end="")
+                    child = pexpect.pty_spawn.spawn(
+                        "/bin/bash", ["-c", cmd], encoding="utf-8", timeout=300
+                    )
+                    child.setwinsize(int(rows), int(columns))
+                    child.interact(
+                        escape_character="\x1d", input_filter=None, output_filter=None
+                    )
+                    child.close()
+                    WAIT = True
+                except:
+                    pass
+            elif cmd[0] == "*":
+                try:
+                    path = cmd[1:]
+                    os.makedirs(path, exist_ok=True)
+                    os.chdir(path)
+                except:
+                    pass
+            else:
                 print_slow(cmd.strip())
                 child = pexpect.spawn(
                     "/bin/bash",
@@ -147,48 +185,14 @@ for cmd in playbook:
                 child.expect(pexpect.EOF)
                 child.close()
                 print(PROMPT, flush=True, end="")
-            except:
+            time.sleep(1)
+            while WAIT:
                 pass
-        elif cmd[0] == "+":
-            try:
-                cmd = '/bin/bash --rcfile <(echo "PS1=' + "'" + PROMPT + "'" + '")'
-                print("\033[0K\r", flush=True, end="")
-                child = pexpect.pty_spawn.spawn(
-                    "/bin/bash", ["-c", cmd], encoding="utf-8", timeout=300
-                )
-                child.setwinsize(int(rows), int(columns))
-                child.interact(
-                    escape_character="\x1d", input_filter=None, output_filter=None
-                )
-                child.close()
-                WAIT = True
-            except:
-                pass
-        elif cmd[0] == "*":
-            try:
-                path = cmd[1:]
-                os.makedirs(path, exist_ok=True)
-                os.chdir(path)
-                workdir = path
-            except:
-                pass
-        else:
-            print_slow(cmd.strip())
-            child = pexpect.spawn(
-                "/bin/bash",
-                ["-c", cmd.strip()],
-                logfile=sys.stdout,
-                encoding="utf-8",
-                timeout=300,
-            )
-            child.setwinsize(int(rows), int(columns))
-            child.expect(pexpect.EOF)
-            child.close()
-            print(PROMPT, flush=True, end="")
-        time.sleep(1)
-        while WAIT:
-            pass
-            time.sleep(0.3)
-        WAIT = True
-    except MyException as e:
-        print(e)
+                time.sleep(0.3)
+            WAIT = True
+        except MyException as e:
+            print(e)
+
+
+if __name__ == "__main__":
+    main()
