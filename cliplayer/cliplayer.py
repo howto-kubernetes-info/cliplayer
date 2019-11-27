@@ -84,7 +84,7 @@ def signal_handler(sig, frame):
 WAIT = ""
 
 
-def main():
+def play():
     global WAIT
     WAIT = True
 
@@ -195,4 +195,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    play()
