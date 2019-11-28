@@ -106,7 +106,7 @@ def play():
     for cmd in playbook:
         if len(cmd.strip()) != 0:
             rows, columns = subprocess.check_output(["stty", "size"]).decode().split()
-    
+
             try:
                 if cmd[0] == "_":
                     try:
@@ -117,7 +117,9 @@ def play():
                         )
                         child.setwinsize(int(rows), int(columns))
                         child.interact(
-                            escape_character="\x1d", input_filter=None, output_filter=None
+                            escape_character="\x1d",
+                            input_filter=None,
+                            output_filter=None,
                         )
                         child.close()
                         print(PROMPT, flush=True, end="")
@@ -157,14 +159,22 @@ def play():
                         pass
                 elif cmd[0] == "+":
                     try:
-                        cmd = '/bin/bash --rcfile <(echo "PS1=' + "'" + PROMPT + "'" + '")'
+                        cmd = (
+                            '/bin/bash --rcfile <(echo "PS1='
+                            + "'"
+                            + PROMPT
+                            + "'"
+                            + '")'
+                        )
                         print("\033[0K\r", flush=True, end="")
                         child = pexpect.pty_spawn.spawn(
                             "/bin/bash", ["-c", cmd], encoding="utf-8", timeout=300
                         )
                         child.setwinsize(int(rows), int(columns))
                         child.interact(
-                            escape_character="\x1d", input_filter=None, output_filter=None
+                            escape_character="\x1d",
+                            input_filter=None,
+                            output_filter=None,
                         )
                         child.close()
                         WAIT = True
