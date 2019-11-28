@@ -1,4 +1,5 @@
 import setuptools
+import os
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -25,4 +26,5 @@ setuptools.setup(
         "Operating System :: POSIX",
     ],
     python_requires='>=3.6',
+    data_files=[('config/',['config/cliplayer.cfg'])],
 )

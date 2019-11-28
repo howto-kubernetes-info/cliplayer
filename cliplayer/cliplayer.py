@@ -9,25 +9,40 @@ import subprocess
 import signal
 import os
 import argparse
+from shutil import copyfile
+from pathlib import Path
+import configparser
+import codecs
+
+home = str(Path.home())
+
+if not os.path.isfile(home + "/.config/cliplayer/cliplayer.cfg"):
+    os.makedirs(home + "/.config/cliplayer/", exist_ok=True)
+    copyfile(
+        sys.prefix + "/config/cliplayer.cfg", home + "/.config/cliplayer/cliplayer.cfg"
+    )
+
+config = configparser.ConfigParser(interpolation=None)
+config.read(home + "/.config/cliplayer/cliplayer.cfg")
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
     "-p",
     "--prompt",
-    default="\033[94mhowto-kubernetes.info \033[92m- \033[91mKubernetes Training \033[0m$ ",
+    default=codecs.decode(config["DEFAULT"]["prompt"], "unicode-escape") + " ",
     help="prompt to use with playbook. Build it like a normal $PS1 prompt.",
 )
 parser.add_argument(
     "-n",
     "--next-key",
-    default="scroll_lock",
-    help="key to press for next command. Default: scroll_lock",
+    default=config["DEFAULT"]["next_key"],
+    help="key to press for next command. Default: " + config["DEFAULT"]["next_key"],
 )
 parser.add_argument(
     "playbook",
     nargs="?",
-    default="./playbook",
-    help="path and name to playbook. Default: ./playbook",
+    default=config["DEFAULT"]["playbook_name"],
+    help="path and name to playbook. Default: " + config["DEFAULT"]["playbook_name"],
 )
 args = parser.parse_args()
 
