@@ -85,8 +85,6 @@ WAIT = ""
 
 
 def play():
-    global WAIT
-    WAIT = True
 
     signal.signal(signal.SIGINT, signal_handler)
 
@@ -99,6 +97,12 @@ def play():
 
     playbook = load_playbook()
     print(PROMPT, flush=True, end="")
+
+    global WAIT
+    WAIT = True
+    while WAIT:
+        time.sleep(0.3)
+
     for cmd in playbook:
         rows, columns = subprocess.check_output(["stty", "size"]).decode().split()
 
