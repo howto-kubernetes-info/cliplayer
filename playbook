@@ -1,29 +1,39 @@
-cat data/begin
-ping -c 3 localhost  && ping -c 3 google.com
-cat config.yaml
-echo "hallo" | sha256sum 
-echo mal schauen wo das hinkommt1  > testfile
-echo mal schauen wo das hinkommt2  >> testfile
-ls -la
-_docker run --name test -it ubuntu 
-_docker attach test 
-docker --help
-docker image --help
-docker container --help
-docker container ls --help
-ps --help
-_man ps
-docker container ls --help
-_man docker-container-ls
-docker --help
-docker imange --help
-_man docker-images
-docker image ls --help
-_man docker-image-ls
-docker container run --help
-_man docker-container-run
-docker run --help
-_man docker-run
-dpkg -L docker-ce-cli | grep man
-_man dockerfile
-firefox https://docs.docker.com 
+! This is a comment that is not shown or executed
+! the next command creates a directory in /tmp. Every command is executed in this directory till you change it
+*/tmp/cliplayer_tutorial
+
+! execute the next command by pressing the scroll lock key
+echo "The cliplayer helps you to script shell based lectures or screencasts." > howto-kubernetes.info
+echo "Build a playbook for your lecture and execute it like you type it live." >> howto-kubernetes.info
+echo "There are a few playbook options to define how and if a command is executed." >> howto-kubernetes.info
+echo "" >> howto-kubernetes.info
+echo "A * at the beginning of a line silently creates a directory. All following commands are executed in this directory" >> howto-kubernetes.info
+echo "The playbook line '*/tmp/cliplayer_tutorial' will create a directory in /tmp/ with the name cliplayer_tutorial" >> howto-kubernetes.info
+echo "" >> howto-kubernetes.info
+pwd
+
+echo "A ! at the beginning of a line defines a comment. It will not be shown or executed." >> howto-kubernetes.info
+echo "" >> howto-kubernetes.info
+
+echo "A _ at the beginning of a line will execute the command and give you interactive control over it." >> howto-kubernetes.info
+echo "The playbook line '_vim howto-kubernetes.info' will open the file with vim and gives you control over vim." >> howto-kubernetes.info
+echo "" >> howto-kubernetes.info
+_vim howto-kubernetes.info
+
+echo "A = at the beginning of a line starts a two part command. The first part is executed but not shown. The output of the first part, replace a variable in the second non interactive command part. The two command parts are seperated by three dollar signs "$$$". The variable that changed is named VAR." >> howto-kubernetes.info
+echo "The command '= LANG=EN_en date +%A $$$ echo "This tutorial is played on VAR"' will silently get the name of today and print it with the second part of the command" >> howto-kubernetes.info
+echo "" >> howto-kubernetes.info
+= LANG=EN_en date +%A $$$ echo "This tutorial is played on VAR"
+
+echo "A + at the beginning of a line gives you controll over a interactive bash that can be left with Ctrl-]." >> howto-kubernetes.info
+echo "" >> howto-kubernetes.info
++
+
+echo "Get ready to use playbooks under howto-kubernetes.info/playbooks" >> howto-kubernetes.info
+echo "If you like active learning like we do, record your screencast with a active learning warning!" >> howto-kubernetes.info
+echo "Read more about active learning under howto-kubernetes.info/active-learning" >> howto-kubernetes.info
+echo "Have fun with the cliplayer and make awesome lectures and screencasts!" >> howto-kubernetes.info
+
+cat howto-kubernetes.info
+
+rm /tmp/cliplayer_tutorial -rf
