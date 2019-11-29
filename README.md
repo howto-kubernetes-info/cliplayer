@@ -1,8 +1,6 @@
 # cliplayer
 cliplayer helps to script shell based lectures or screencast tutorials. The player takes a playbook with shell commands that are executed live like you write them at this moment.
 
-There are a few playbook options that control how and if a line in a playbook is executed. Use the defined characters as the first character in a line to use the available options.
-
 ## Motivation
 When you holding lectures or recording screencast you often need to devide your concentration between talking and typing at the same time. This cliplayer helps you to concentrate more on what you want to teach instead of what you need to type.
 
@@ -12,15 +10,44 @@ When you holding lectures or recording screencast you often need to devide your 
 
 ## Usage
 
-`cliplayer`
+    cliplayer [-h] [-p PROMPT] [-n NEXT_KEY] [playbook]
 
-Hint: You need a playbook in the directory you execute the cliplayer command
+    -h
+       Show the cli help
+    
+    -p PROMPT
+       Change the PS1 prompt of the player
+    
+    -n NEXT_KEY
+       Change the key that is used to execute the next command. Default: Scroll Lock
+    
+    playbook
+       Path and name of the playbook to execute
 
-You execute the next line in the playbook by pressing the "scroll lock" key
 
-You can stop the playbook by pressing Ctrl - C 
+## Config file
 
-##Playbook Options
+After the first usage, there is a configuration file in the home directory to manipulate the default settings.
+
+    $ cat ~/.config/cliplayer/cliplayer.cfg
+    [DEFAULT]
+    prompt = \033[94mhowto-kubernetes.info \033[92m- \033[91mKubernetes Training \033[0m$
+    playbook_name = ./playbook
+    next_key = scroll_lock
+    max_speed = 0.18
+
+## Playbook Options
+
+There are a few playbook options that control how and if a line in a playbook is executed. Use the defined characters as the first character in a line to use the available options.
+
+1. "!"
+
+    Comment in the playbook. The content of this line will not be shown or executed
+
+    Example:
+
+        ! This is a comment with some important information
+
 
 1. " "  
     
@@ -29,8 +56,8 @@ You can stop the playbook by pressing Ctrl - C
 
     Examples:
 
-        `echo "Get free tutorials for Git, Docker, Kubernetes and other topics" > howto-kubernetes.info`
-        `cat howto-kubernetes.info`
+        echo "Get free tutorials for Git, Docker, Kubernetes and other topics" > howto-kubernetes.info
+        cat howto-kubernetes.info
 
 
 1. "*"
@@ -39,8 +66,8 @@ You can stop the playbook by pressing Ctrl - C
 
     Examples:
 
-        `* ../../git_tutorial`
-        `* /tmp/git_tutorial`
+        * ../../git_tutorial
+        * /tmp/git_tutorial
 
 
 1. "_"
@@ -50,8 +77,8 @@ You can stop the playbook by pressing Ctrl - C
 
     Examples:
 
-       `_vim Readme.txt`
-       `_man docker`
+       _vim Readme.txt
+       _man docker
 
 
 1. "="
@@ -62,7 +89,7 @@ You can stop the playbook by pressing Ctrl - C
 
     Example:
 
-        `= cat .git/refs/heads/master | cut -c1-7 $$$ git cat-file -p VAR`
+        = cat .git/refs/heads/master | cut -c1-7 $$$ git cat-file -p VAR
 
 
 1. "+"
@@ -72,14 +99,14 @@ You can stop the playbook by pressing Ctrl - C
 
     Examples:
 
-        `+`
-        `+ You can write everything you want behind a +. It will not be shown or executed`
+        +
+        + You can write everything you want behind a +. It will not be shown or executed
 
+## Links
+[Official cliplayer video tutorial](https://howto-kubernetes.info/cliplayer/tutorial)
 
-1. "!"
+[Official playbook examples](https://howto-kubernetes.info/cliplayer/playbook_examples)
 
-    Comment in the playbook. The content of this line will not be shown or executed
+[Key codes for next_key options](https://pynput.readthedocs.io/en/latest/keyboard.html#pynput.keyboard.Key)
 
-    Example:
-
-        `! This is a comment with some important informations`
+[How to create a prompt](https://wiki.archlinux.org/index.php/Bash/Prompt_customization)
