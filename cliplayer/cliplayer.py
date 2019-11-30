@@ -39,6 +39,12 @@ parser.add_argument(
     help="key to press for next command. Default: " + config["DEFAULT"]["next_key"],
 )
 parser.add_argument(
+    "-s",
+    "--speed",
+    default=config["DEFAULT"]["max_speed"],
+    help="max speed to type one character. Default: " + config["DEFAULT"]["max_speed"],
+)
+parser.add_argument(
     "playbook",
     nargs="?",
     default=config["DEFAULT"]["playbook_name"],
@@ -47,7 +53,6 @@ parser.add_argument(
 args = parser.parse_args()
 
 PROMPT = args.prompt
-
 
 def load_playbook():
     try:
@@ -64,7 +69,7 @@ def load_playbook():
 def print_slow(str):
     for letter in str:
         print(letter, flush=True, end="")
-        time.sleep(random.uniform(0.0, 0.18))
+        time.sleep(random.uniform(0.0, float(args.speed)))
     time.sleep(0.1)
     print("")
 
