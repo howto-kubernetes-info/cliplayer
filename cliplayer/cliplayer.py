@@ -83,20 +83,27 @@ def on_press(key):
         global WAIT
         WAIT = False
 
+directories = []
 
 def signal_handler(sig, frame):
     print("\nYou stopped the tutorial with Ctrl+C!")
-    print("Tutorial Cleanup!")
-    print("Do you want to remove the following directory? ")
-    dirpath = os.getcwd()
-    print(dirpath)
-    i = input("Remove?: ")
-    if i.lower() in ["y", "yes"]:
-        print("I clean up the remains.")
-        os.system("rm -rf " + dirpath)
-        print("Goodbye!")
-    else:
-        print("I dont' clean up. Goodbye!")
+    global directories
+    if directories:
+        print("Tutorial Cleanup!")
+        if len(directories) > 1:
+            print("Do you want to remove the following directories? ")
+        else:
+            print("Do you want to remove the following directory? ")
+        for directory in directories:
+            print(directory)
+        i = input("Remove?: ")
+        if i.lower() in ["y", "yes"]:
+            print("I clean up the remains.")
+            for directory in directories:
+                os.system("rm -rf " + directory)
+            print("Goodbye!")
+        else:
+            print("I dont' clean up. Goodbye!")
     sys.exit(0)
 
 
@@ -234,8 +241,13 @@ def play():
                         path = cmd[1:]
                         os.makedirs(path, exist_ok=True)
                         os.chdir(path)
-                    except:
-                        pass
+
+                        global directories
+                        dirpath = os.getcwd()
+                        directories.append(dirpath)
+
+                    except Exception as e:
+                        print(e)
                 else:
                     print_slow(cmd.strip())
                     child = pexpect.spawn(
