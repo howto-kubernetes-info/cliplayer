@@ -176,6 +176,36 @@ def play():
                         print(PROMPT, flush=True, end="")
                     except:
                         pass
+                elif cmd[0] == "$":
+                    try:
+                        cmd = cmd[1:]
+                        cmd_1, cmd_2 = cmd.split("$$$")
+                        child = pexpect.spawn(
+                            "/bin/bash",
+                            ["-c", cmd_1.strip()],
+                            logfile=None,
+                            encoding="utf-8",
+                            timeout=300,
+                        )
+                        child.setwinsize(int(rows), int(columns))
+                        child.expect(pexpect.EOF)
+                        child.close()
+                        cmd = cmd_2.replace("VAR", child.before.strip())
+                        print_slow(cmd.strip())
+                        child = pexpect.pty_spawn.spawn(
+                            cmd.strip(), encoding="utf-8", timeout=300
+                        )
+                        child.setwinsize(int(rows), int(columns))
+                        child.interact(
+                            escape_character="\x1d",
+                            input_filter=None,
+                            output_filter=None,
+                        )
+                        child.close()
+                        print(PROMPT, flush=True, end="")
+                        WAIT = True
+                    except:
+                        pass
                 elif cmd[0] == "+":
                     try:
                         cmd = (

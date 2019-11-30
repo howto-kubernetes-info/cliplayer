@@ -10,7 +10,7 @@ When you holding lectures or recording screencast you often need to devide your 
 
 ## Usage
 
-    cliplayer [-h] [-p PROMPT] [-n NEXT_KEY] [playbook]
+    cliplayer [-h] [-p PROMPT] [-n NEXT_KEY] [-s SPEED] [playbook]
 
     -h
        Show the cli help
@@ -20,6 +20,9 @@ When you holding lectures or recording screencast you often need to devide your 
     
     -n NEXT_KEY
        Change the key that is used to execute the next command. Default: Scroll Lock
+
+    -s SPEED
+       Set the max speed of typing one character. Default: 0.18
     
     playbook
        Path and name of the playbook to execute
@@ -90,6 +93,15 @@ There are a few playbook options that control how and if a line in a playbook is
     Example:
 
         = cat .git/refs/heads/master | cut -c1-7 $$$ git cat-file -p VAR
+
+
+1. "$"
+    
+    Same as the = option with the difference that you get interactive control over the second command.
+
+    Example:
+
+        = git rev-parse HEAD^^^ | cut -c1-7 $$$ git revert VAR
 
 
 1. "+"
