@@ -150,8 +150,8 @@ def play():
                         child.close()
                         print(PROMPT, flush=True, end="")
                         WAIT = True
-                    except:
-                        pass
+                    except Exception as e:
+                        print(e)
                 elif cmd[0] == "!":
                     continue
                 elif cmd[0] == "=":
@@ -181,8 +181,8 @@ def play():
                         child.expect(pexpect.EOF)
                         child.close()
                         print(PROMPT, flush=True, end="")
-                    except:
-                        pass
+                    except Exception as e:
+                        print(e)
                 elif cmd[0] == "$":
                     try:
                         cmd = cmd[1:]
@@ -211,8 +211,8 @@ def play():
                         child.close()
                         print(PROMPT, flush=True, end="")
                         WAIT = True
-                    except:
-                        pass
+                    except Exception as e:
+                        print(e)
                 elif cmd[0] == "+":
                     try:
                         cmd = (
@@ -234,8 +234,8 @@ def play():
                         )
                         child.close()
                         WAIT = True
-                    except:
-                        pass
+                    except Exception as e:
+                        print(e)
                 elif cmd[0] == "*":
                     try:
                         path = cmd[1:]
