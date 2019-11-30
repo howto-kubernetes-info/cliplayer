@@ -10,7 +10,7 @@ When you holding lectures or recording screencast you often need to devide your 
 
 ## Usage
 
-    cliplayer [-h] [-p PROMPT] [-n NEXT_KEY] [-s SPEED] [playbook]
+    cliplayer [-h] [-p PROMPT] [-n NEXT_KEY] [-s SPEED] [-i INTERACTIVE_KEY] [playbook]
 
     -h
        Show the cli help
@@ -20,6 +20,9 @@ When you holding lectures or recording screencast you often need to devide your 
     
     -n NEXT_KEY
        Change the key that is used to execute the next command. Default: Scroll Lock
+
+    -i INTERACTIVE_KEY
+       key to press for a interactive bash as the next command. Default: Pause
 
     -s SPEED
        Set the max speed of typing one character. Default: 0.18
@@ -37,6 +40,7 @@ After the first usage, there is a configuration file in the home directory to ma
     prompt = \033[94mhowto-kubernetes.info \033[92m- \033[91mKubernetes Training \033[0m$
     playbook_name = ./playbook
     next_key = scroll_lock
+    interactive_key = pause
     max_speed = 0.18
 
 ## Playbook Options
@@ -119,6 +123,6 @@ There are a few playbook options that control how and if a line in a playbook is
 
 [Official playbook examples](https://howto-kubernetes.info/cliplayer/playbook_examples)
 
-[Key codes for next_key options](https://pynput.readthedocs.io/en/latest/keyboard.html#pynput.keyboard.Key)
+[Key codes for next_key and interactive_key options](https://pynput.readthedocs.io/en/latest/keyboard.html#pynput.keyboard.Key)
 
 [How to create a prompt](https://wiki.archlinux.org/index.php/Bash/Prompt_customization)

@@ -25,6 +25,10 @@ echo "The command '= LANG=EN_en date +%A $$$ echo "This tutorial is played on VA
 echo "" >> howto-kubernetes.info
 = LANG=EN_en date +%A $$$ echo "This tutorial is played on VAR"
 
+echo "A $ at the beginning of a line is like the = option with the difference that you get interactive control over the second command." >> howto-kubernetes.info
+echo "" >> howto-kubernetes.info
+$ LANG=EN_en date +%A $$$ vim VAR_diary
+
 echo "A + at the beginning of a line gives you controll over a interactive bash that can be left with Ctrl-]." >> howto-kubernetes.info
 echo "" >> howto-kubernetes.info
 +

@@ -39,6 +39,12 @@ parser.add_argument(
     help="key to press for next command. Default: " + config["DEFAULT"]["next_key"],
 )
 parser.add_argument(
+    "-i",
+    "--interactive-key",
+    default=config["DEFAULT"]["interactive_key"],
+    help="key to press for a interactive bash as the next command. Default: " + config["DEFAULT"]["interactive_key"],
+)
+parser.add_argument(
     "-s",
     "--speed",
     default=config["DEFAULT"]["max_speed"],
@@ -77,11 +83,38 @@ def print_slow(str):
 class MyException(Exception):
     pass
 
+def interactive_bash():
+    try:
+        rows, columns = subprocess.check_output(["stty", "size"]).decode().split()
+        cmd = (
+            '/bin/bash --rcfile <(echo "PS1='
+            + "'"
+            + PROMPT
+            + "'"
+            + '")'
+        )
+        print("\033[0K\r", flush=True, end="")
+        child = pexpect.pty_spawn.spawn(
+            "/bin/bash", ["-c", cmd], encoding="utf-8", timeout=300
+        )
+        child.setwinsize(int(rows), int(columns))
+        child.interact(
+            escape_character="\x1d",
+            input_filter=None,
+            output_filter=None,
+        )
+        child.close()
+        WAIT = True
+        time.sleep(1.0)
+    except Exception as e:
+        print(e)
 
 def on_press(key):
     if key == getattr(Key, args.next_key):
         global WAIT
         WAIT = False
+    if key == getattr(Key, args.interactive_key):
+        interactive_bash()
 
 directories = []
 
@@ -214,28 +247,7 @@ def play():
                     except Exception as e:
                         print(e)
                 elif cmd[0] == "+":
-                    try:
-                        cmd = (
-                            '/bin/bash --rcfile <(echo "PS1='
-                            + "'"
-                            + PROMPT
-                            + "'"
-                            + '")'
-                        )
-                        print("\033[0K\r", flush=True, end="")
-                        child = pexpect.pty_spawn.spawn(
-                            "/bin/bash", ["-c", cmd], encoding="utf-8", timeout=300
-                        )
-                        child.setwinsize(int(rows), int(columns))
-                        child.interact(
-                            escape_character="\x1d",
-                            input_filter=None,
-                            output_filter=None,
-                        )
-                        child.close()
-                        WAIT = True
-                    except Exception as e:
-                        print(e)
+                    interactive_bash()
                 elif cmd[0] == "*":
                     try:
                         path = cmd[1:]
