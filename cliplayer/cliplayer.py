@@ -74,8 +74,7 @@ class MyException(Exception):
 
 
 def on_press(key):
-    # if key == Key.shift_l or key == Key.shift_r:
-    if key == Key.scroll_lock:
+    if key == getattr(Key, args.next_key):
         global WAIT
         WAIT = False
 
