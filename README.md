@@ -10,7 +10,9 @@ When you holding lectures or recording screencast you often need to devide your 
 
 ## Usage
 
-    cliplayer [-h] [-p PROMPT] [-n NEXT_KEY] [-s SPEED] [-i INTERACTIVE_KEY] [playbook]
+    cliplayer [-h] [-p PROMPT] [-n NEXT_KEY] [-i INTERACTIVE_KEY] 
+                   [-b BASE_SPEED] [-m MAX_SPEED]
+                   [playbook]
 
     -h
        Show the cli help
@@ -19,14 +21,17 @@ When you holding lectures or recording screencast you often need to devide your 
        Change the PS1 prompt of the player
     
     -n NEXT_KEY
-       Change the key that is used to execute the next command. Default: Scroll Lock
+       key to press to execute the next command. Default: Scroll Lock
 
     -i INTERACTIVE_KEY
        key to press for a interactive bash as the next command. Default: Pause
 
-    -s SPEED
-       Set the max speed of typing one character. Default: 0.18
+    -b BASE_SPEED
+       Set the base speed of typing one character. Default: 0.03
     
+    -m MAX_SPEED
+       Set the max speed of typing one character. Default: 0.15
+
     playbook
        Path and name of the playbook to execute
 
@@ -41,7 +46,8 @@ After the first usage, there is a configuration file in the home directory to ma
     playbook_name = ./playbook
     next_key = scroll_lock
     interactive_key = pause
-    max_speed = 0.18
+    base_speed = 0.03
+    max_speed = 0.15
 
 ## Playbook Options
 
