@@ -60,6 +60,7 @@ args = parser.parse_args()
 
 PROMPT = args.prompt
 
+
 def load_playbook():
     try:
         playbook = open(args.playbook, "r")
@@ -82,6 +83,7 @@ def print_slow(str):
 
 class MyException(Exception):
     pass
+
 
 def interactive_bash():
     try:
@@ -109,6 +111,7 @@ def interactive_bash():
     except Exception as e:
         print(e)
 
+
 def on_press(key):
     if key == getattr(Key, args.next_key):
         global WAIT
@@ -116,27 +119,40 @@ def on_press(key):
     if key == getattr(Key, args.interactive_key):
         interactive_bash()
 
+
 directories = []
 
-def signal_handler(sig, frame):
-    print("\nYou stopped the tutorial with Ctrl+C!")
+
+def cleanup():
     global directories
     if directories:
-        print("Tutorial Cleanup!")
+        print("\n**** Training Cleanup! ****\n")
         if len(directories) > 1:
-            print("Do you want to remove the following directories? ")
+            print("Do you want to remove the following directories?: ")
         else:
-            print("Do you want to remove the following directory? ")
+            print("Do you want to remove the following directory?: ")
         for directory in directories:
             print(directory)
-        i = input("Remove?: ")
+        i = input("\nRemove?: ")
         if i.lower() in ["y", "yes"]:
-            print("I clean up the remains.")
+            print("\nI clean up the remains.")
             for directory in directories:
                 os.system("rm -rf " + directory)
-            print("Goodbye!")
         else:
-            print("I dont' clean up. Goodbye!")
+            print("\nI don't clean up.")
+    print("\n**** End Of Training ****")
+    if config["DEFAULT"]["message"].lower() == "true":
+        print(
+            "Remember to visit howto-kubernetes.info - The cloud native active learning community."
+        )
+        print(
+            "Get free commercial usable trainings and playbooks for Git, Docker, Kubernetes and more!"
+        )
+
+
+def signal_handler(sig, frame):
+    print("\nYou stopped cliplayer with Ctrl+C!")
+    cleanup()
     sys.exit(0)
 
 
@@ -280,6 +296,7 @@ def play():
                 WAIT = True
             except MyException as e:
                 print(e)
+    cleanup()
 
 
 if __name__ == "__main__":
