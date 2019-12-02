@@ -17,7 +17,6 @@ setuptools.setup(
     scripts=['bin/cliplayer'],
     install_requires=[
         'pynput',
-        'pyyaml',
         'pexpect'
     ],
     classifiers=[

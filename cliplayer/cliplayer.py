@@ -1,76 +1,85 @@
 #!/usr/bin/env python
-import yaml
-import time
-import random
-from pynput.keyboard import Key, Listener
-import pexpect
-import sys
-import subprocess
-import signal
-import os
+
+"""
+This is a Module to play a playbook with bash commands like they typed in the moment
+"""
+
 import argparse
-from shutil import copyfile
-from pathlib import Path
 import configparser
 import codecs
+import os
+import signal
+import subprocess
+import sys
+import time
+import random
+from shutil import copyfile
+from pathlib import Path
+import pexpect
+from pynput.keyboard import Key, Listener
 
-home = str(Path.home())
+HOME = str(Path.home())
 
-if not os.path.isfile(home + "/.config/cliplayer/cliplayer.cfg"):
-    os.makedirs(home + "/.config/cliplayer/", exist_ok=True)
+if not os.path.isfile(HOME + "/.config/cliplayer/cliplayer.cfg"):
+    os.makedirs(HOME + "/.config/cliplayer/", exist_ok=True)
     copyfile(
-        sys.prefix + "/config/cliplayer.cfg", home + "/.config/cliplayer/cliplayer.cfg"
+        sys.prefix + "/config/cliplayer.cfg", HOME + "/.config/cliplayer/cliplayer.cfg"
     )
 
-config = configparser.ConfigParser(interpolation=None)
-config.read(home + "/.config/cliplayer/cliplayer.cfg")
+CONFIG = configparser.ConfigParser(interpolation=None)
+CONFIG.read(HOME + "/.config/cliplayer/cliplayer.cfg")
 
-parser = argparse.ArgumentParser()
-parser.add_argument(
+PARSER = argparse.ArgumentParser()
+PARSER.add_argument(
     "-p",
     "--prompt",
-    default=codecs.decode(config["DEFAULT"]["prompt"], "unicode-escape") + " ",
+    default=codecs.decode(CONFIG["DEFAULT"]["prompt"], "unicode-escape") + " ",
     help="prompt to use with playbook. Build it like a normal $PS1 prompt.",
 )
-parser.add_argument(
+PARSER.add_argument(
     "-n",
     "--next-key",
-    default=config["DEFAULT"]["next_key"],
-    help="key to press for next command. Default: " + config["DEFAULT"]["next_key"],
+    default=CONFIG["DEFAULT"]["next_key"],
+    help="key to press for next command. Default: " + CONFIG["DEFAULT"]["next_key"],
 )
-parser.add_argument(
+PARSER.add_argument(
     "-i",
     "--interactive-key",
-    default=config["DEFAULT"]["interactive_key"],
-    help="key to press for a interactive bash as the next command. Default: " + config["DEFAULT"]["interactive_key"],
+    default=CONFIG["DEFAULT"]["interactive_key"],
+    help="key to press for a interactive bash as the next command. Default: "
+    + CONFIG["DEFAULT"]["interactive_key"],
 )
-parser.add_argument(
+PARSER.add_argument(
     "-b",
     "--base-speed",
-    default=config["DEFAULT"]["base_speed"],
-    help="base speed to type one character. Default: " + config["DEFAULT"]["base_speed"],
+    default=CONFIG["DEFAULT"]["base_speed"],
+    help="base speed to type one character. Default: "
+    + CONFIG["DEFAULT"]["base_speed"],
 )
-parser.add_argument(
+PARSER.add_argument(
     "-m",
     "--max-speed",
-    default=config["DEFAULT"]["max_speed"],
-    help="max speed to type one character. Default: " + config["DEFAULT"]["max_speed"],
+    default=CONFIG["DEFAULT"]["max_speed"],
+    help="max speed to type one character. Default: " + CONFIG["DEFAULT"]["max_speed"],
 )
-parser.add_argument(
+PARSER.add_argument(
     "playbook",
     nargs="?",
-    default=config["DEFAULT"]["playbook_name"],
-    help="path and name to playbook. Default: " + config["DEFAULT"]["playbook_name"],
+    default=CONFIG["DEFAULT"]["playbook_name"],
+    help="path and name to playbook. Default: " + CONFIG["DEFAULT"]["playbook_name"],
 )
-args = parser.parse_args()
+ARGS = PARSER.parse_args()
 
-PROMPT = args.prompt
+PROMPT = ARGS.prompt
 
 
 def load_playbook():
+    """
+    Loading commands from a playbook and returning a list with the commands.
+    """
     try:
-        playbook = open(args.playbook, "r")
-    except Exception as e:
+        playbook = open(ARGS.playbook, "r")
+    except FileNotFoundError:
         print("You need to provide a playbook")
         sys.exit(0)
     commands = []
@@ -79,10 +88,13 @@ def load_playbook():
     return commands
 
 
-def print_slow(str):
-    for letter in str:
+def print_slow(string):
+    """
+    Printing characters like you type it at the moment.
+    """
+    for letter in string:
         print(letter, flush=True, end="")
-        time.sleep(random.uniform(float(args.base_speed), float(args.max_speed)))
+        time.sleep(random.uniform(float(ARGS.base_speed), float(ARGS.max_speed)))
     time.sleep(0.1)
     print("")
 
@@ -92,71 +104,78 @@ class MyException(Exception):
 
 
 def interactive_bash():
+    """
+    Start a new bash and give interactive control over it
+    """
     try:
         rows, columns = subprocess.check_output(["stty", "size"]).decode().split()
-        cmd = (
-            '/bin/bash --rcfile <(echo "PS1='
-            + "'"
-            + PROMPT
-            + "'"
-            + '")'
-        )
+        cmd = '/bin/bash --rcfile <(echo "PS1=' + "'" + PROMPT + "'" + '")'
         print("\033[0K\r", flush=True, end="")
         child = pexpect.pty_spawn.spawn(
             "/bin/bash", ["-c", cmd], encoding="utf-8", timeout=300
         )
         child.setwinsize(int(rows), int(columns))
         child.interact(
-            escape_character="\x1d",
-            input_filter=None,
-            output_filter=None,
+            escape_character="\x1d", input_filter=None, output_filter=None,
         )
         child.close()
+        global WAIT
         WAIT = True
         time.sleep(1.0)
-    except Exception as e:
+    except pexpect.exceptions.ExceptionPexpect as e:
         print(e)
 
 
 def on_press(key):
-    if key == getattr(Key, args.next_key):
+    """
+    Called on every key press to check if the next command or an interactive bash should be executed
+    """
+    if key == getattr(Key, ARGS.next_key):
         global WAIT
         WAIT = False
-    if key == getattr(Key, args.interactive_key):
+    if key == getattr(Key, ARGS.interactive_key):
         interactive_bash()
 
 
-directories = []
+DIRECTORIES = []
 
 
 def cleanup():
-    global directories
-    if directories:
+    """
+    Called on end of playbook or after Ctrl-C to clean up directories
+    that are created with the playbook option *
+    """
+    global DIRECTORIES
+    if DIRECTORIES:
         print("\n**** Training Cleanup! ****\n")
-        if len(directories) > 1:
+        if len(DIRECTORIES) > 1:
             print("Do you want to remove the following directories?: ")
         else:
             print("Do you want to remove the following directory?: ")
-        for directory in directories:
+        for directory in DIRECTORIES:
             print(directory)
         i = input("\nRemove?: ")
         if i.lower() in ["y", "yes"]:
             print("\nI clean up the remains.")
-            for directory in directories:
+            for directory in DIRECTORIES:
                 os.system("rm -rf " + directory)
         else:
             print("\nI don't clean up.")
     print("\n**** End Of Training ****")
-    if config["DEFAULT"]["message"].lower() == "true":
+    if CONFIG["DEFAULT"]["message"].lower() == "true":
         print(
             "Remember to visit howto-kubernetes.info - The cloud native active learning community."
         )
         print(
-            "Get free commercial usable trainings and playbooks for Git, Docker, Kubernetes and more!"
+            "Get free commercial usable trainings and playbooks for Git,"
+            "Docker, Kubernetes and more!"
         )
 
 
-def signal_handler(sig, frame):
+def signal_handler(sig, frame):  # pylint: disable=W0613
+    """
+    Catch Ctrl-C and clean up the remains before exiting the cliplayer
+    """
     print("\nYou stopped cliplayer with Ctrl+C!")
     cleanup()
     sys.exit(0)
@@ -166,6 +185,9 @@ WAIT = ""
 
 
 def play():
+    """
+    Main function that runs a loop to play all commands of a existing playbook
+    """
 
     signal.signal(signal.SIGINT, signal_handler)
 
@@ -173,8 +195,7 @@ def play():
     try:
         listener.start()
     except MyException as e:
-        print("Listener exception")
-        pass
+        print("Listener exception:" + e)
 
     playbook = load_playbook()
     print(PROMPT, flush=True, end="")
@@ -205,8 +226,9 @@ def play():
                         child.close()
                         print(PROMPT, flush=True, end="")
                         WAIT = True
-                    except Exception as e:
+                    except pexpect.exceptions.ExceptionPexpect as e:
                         print(e)
+                        print("Error in command: " + cmd)
                 elif cmd[0] == "!":
                     continue
                 elif cmd[0] == "=":
@@ -236,8 +258,9 @@ def play():
                         child.expect(pexpect.EOF)
                         child.close()
                         print(PROMPT, flush=True, end="")
-                    except Exception as e:
+                    except ValueError as e:
                         print(e)
+                        print("Error in command: " + cmd)
                 elif cmd[0] == "$":
                     try:
                         cmd = cmd[1:]
@@ -252,10 +275,10 @@ def play():
                         child.setwinsize(int(rows), int(columns))
                         child.expect(pexpect.EOF)
                         child.close()
-                        cmd = cmd_2.replace("VAR", child.before.strip())
-                        print_slow(cmd.strip())
+                        cmd_2 = cmd_2.replace("VAR", child.before.strip())
+                        print_slow(cmd_2.strip())
                         child = pexpect.pty_spawn.spawn(
-                            cmd.strip(), encoding="utf-8", timeout=300
+                            cmd_2.strip(), encoding="utf-8", timeout=300
                         )
                         child.setwinsize(int(rows), int(columns))
                         child.interact(
@@ -266,8 +289,12 @@ def play():
                         child.close()
                         print(PROMPT, flush=True, end="")
                         WAIT = True
-                    except Exception as e:
+                    except ValueError as e:
                         print(e)
+                        print("Error in command: " + cmd)
+                    except pexpect.exceptions.ExceptionPexpect as e:
+                        print(e)
+                        print("Error in command: " + cmd)
                 elif cmd[0] == "+":
                     interactive_bash()
                 elif cmd[0] == "*":
@@ -276,12 +303,13 @@ def play():
                         os.makedirs(path, exist_ok=True)
                         os.chdir(path)
 
-                        global directories
+                        global DIRECTORIES
                         dirpath = os.getcwd()
-                        directories.append(dirpath)
+                        DIRECTORIES.append(dirpath)
 
-                    except Exception as e:
+                    except PermissionError as e:
                         print(e)
+                        print("Error in command: " + cmd)
                 else:
                     print_slow(cmd.strip())
                     child = pexpect.spawn(
@@ -297,11 +325,11 @@ def play():
                     print(PROMPT, flush=True, end="")
                 time.sleep(1)
                 while WAIT:
-                    pass
                     time.sleep(0.3)
                 WAIT = True
             except MyException as e:
                 print(e)
+                print("Error in command: " + cmd)
     cleanup()
 
 
