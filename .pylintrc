@@ -2,3 +2,8 @@
 good-names=
     i,
     e,
+
+[MESSAGES CONTROL]
+disable=
+    too-many-instance-attributes,
+    too-many-arguments
