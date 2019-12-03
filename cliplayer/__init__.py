@@ -1,1 +1,1 @@
-from .cliplayer import play
+from .cliplayer import main
