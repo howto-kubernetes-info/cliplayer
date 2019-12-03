@@ -339,6 +339,7 @@ class CliPlayer:
 
                     elif cmd[0] == "*":
                         self.create_directory(cmd[1:])
+                        self.wait = False
 
                     else:
                         self.print_slow(cmd.strip())
