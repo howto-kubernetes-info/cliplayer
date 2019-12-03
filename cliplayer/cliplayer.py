@@ -19,6 +19,120 @@ import pexpect
 from pynput.keyboard import Key, Listener
 
 
+def get_arguments():
+    """
+    Get command line arguments and return them.
+    """
+    home = str(Path.home())
+    config = configparser.ConfigParser(interpolation=None)
+    config.read(home + "/.config/cliplayer/cliplayer.cfg")
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-p",
+        "--prompt",
+        default=codecs.decode(config["DEFAULT"]["prompt"], "unicode-escape") + " ",
+        help="prompt to use with playbook. Build it like a normal $PS1 prompt.",
+    )
+    parser.add_argument(
+        "-n",
+        "--next-key",
+        default=config["DEFAULT"]["next_key"],
+        help="key to press for next command. Default: " + config["DEFAULT"]["next_key"],
+    )
+    parser.add_argument(
+        "-i",
+        "--interactive-key",
+        default=config["DEFAULT"]["interactive_key"],
+        help="key to press for a interactive bash as the next command. Default: "
+        + config["DEFAULT"]["interactive_key"],
+    )
+    parser.add_argument(
+        "-b",
+        "--base-speed",
+        default=config["DEFAULT"]["base_speed"],
+        help="base speed to type one character. Default: "
+        + config["DEFAULT"]["base_speed"],
+    )
+    parser.add_argument(
+        "-m",
+        "--max-speed",
+        default=config["DEFAULT"]["max_speed"],
+        help="max speed to type one character. Default: "
+        + config["DEFAULT"]["max_speed"],
+    )
+    parser.add_argument(
+        "playbook",
+        nargs="?",
+        default=config["DEFAULT"]["playbook_name"],
+        help="path and name to playbook. Default: "
+        + config["DEFAULT"]["playbook_name"],
+    )
+    return parser.parse_args()
+
+
+def create_config_file():
+    """
+    Create a config file in the home directory if it is not there already
+    """
+    home = str(Path.home())
+    if not os.path.isfile(home + "/.config/cliplayer/cliplayer.cfg"):
+        os.makedirs(home + "/.config/cliplayer/", exist_ok=True)
+        copyfile(
+            sys.prefix + "/config/cliplayer.cfg",
+            home + "/.config/cliplayer/cliplayer.cfg",
+        )
+
+
+def execute_interactive_command(cmd):
+    """
+    Function to execute a interactive command and return the output of the command if there is some
+    """
+    try:
+        rows, columns = subprocess.check_output(["stty", "size"]).decode().split()
+        child = pexpect.pty_spawn.spawn(cmd.strip(), encoding="utf-8", timeout=300)
+        child.setwinsize(int(rows), int(columns))
+        child.interact(
+            escape_character="\x1d", input_filter=None, output_filter=None,
+        )
+        child.close()
+        return child.before
+    except pexpect.exceptions.ExceptionPexpect as e:
+        print(e)
+        print("Error in command: " + cmd)
+        return None
+
+
+def execute_command(cmd, logfile):
+    """
+    Function to execute a non-interactive command and
+    return the output of the command if there is some
+    """
+    try:
+        rows, columns = subprocess.check_output(["stty", "size"]).decode().split()
+        child = pexpect.spawn(
+            "/bin/bash",
+            ["-c", cmd.strip()],
+            logfile=logfile,
+            encoding="utf-8",
+            timeout=300,
+        )
+        child.setwinsize(int(rows), int(columns))
+        child.expect(pexpect.EOF)
+        child.close()
+        return child.before
+    except pexpect.exceptions.ExceptionPexpect as e:
+        print(e)
+        print("Error in command: " + cmd)
+        return None
+
+
+class MyException(Exception):
+    """
+    Basic Exception
+    """
+
+
 class CliPlayer:
     """
     Class to play playbooks with bash commands like typing them at the moment
@@ -61,13 +175,28 @@ class CliPlayer:
 
     def print_slow(self, string):
         """
-        Printing characters like you type it at the moment.
+        Printing characters like you type it at the moment without returning anything
         """
         for letter in string:
             print(letter, flush=True, end="")
             time.sleep(random.uniform(float(self.base_speed), float(self.max_speed)))
         time.sleep(0.1)
         print("")
+
+    def create_directory(self, path):
+        """
+        Function to create a directory and change the working directory to it
+        """
+        try:
+            os.makedirs(path, exist_ok=True)
+            os.chdir(path)
+
+            dirpath = os.getcwd()
+            self.directories.append(dirpath)
+
+        except PermissionError as e:
+            print(e)
+            print("Error in command: *" + path)
 
     def interactive_bash(self):
         """
@@ -139,11 +268,10 @@ class CliPlayer:
         self.cleanup()
         sys.exit(0)
 
-    def play(self):
+    def start_key_listener(self):
         """
-        Main function that runs a loop to play all commands of a existing playbook
+        Start to listen for key presses and Ctrl-C sequence
         """
-
         signal.signal(signal.SIGINT, self.signal_handler)
 
         listener = Listener(on_press=self.on_press)
@@ -152,136 +280,77 @@ class CliPlayer:
         except MyException as e:
             print("Listener exception:" + e)
 
+    def play(self):
+        """
+        Main function that runs a loop to play all commands of a existing playbook
+        """
+
+        self.start_key_listener()
+
         playbook = self.load_playbook()
         print(self.prompt, flush=True, end="")
 
-        self.wait = True
         while self.wait:
             time.sleep(0.3)
 
         for cmd in playbook:
             if len(cmd.strip()) != 0:
-                rows, columns = (
-                    subprocess.check_output(["stty", "size"]).decode().split()
-                )
-
                 try:
                     if cmd[0] == "_":
-                        try:
-                            cmd = cmd[1:]
-                            self.print_slow(cmd.strip())
-                            child = pexpect.pty_spawn.spawn(
-                                cmd.strip(), encoding="utf-8", timeout=300
-                            )
-                            child.setwinsize(int(rows), int(columns))
-                            child.interact(
-                                escape_character="\x1d",
-                                input_filter=None,
-                                output_filter=None,
-                            )
-                            child.close()
-                            print(self.prompt, flush=True, end="")
-                            self.wait = True
-                        except pexpect.exceptions.ExceptionPexpect as e:
-                            print(e)
-                            print("Error in command: " + cmd)
+                        cmd = cmd[1:]
+
+                        self.print_slow(cmd.strip())
+                        execute_interactive_command(cmd)
+
+                        print(self.prompt, flush=True, end="")
+                        self.wait = True
+
                     elif cmd[0] == "!":
                         continue
+
                     elif cmd[0] == "=":
-                        try:
-                            cmd = cmd[1:]
-                            cmd_1, cmd_2 = cmd.split("$$$")
-                            child = pexpect.spawn(
-                                "/bin/bash",
-                                ["-c", cmd_1.strip()],
-                                logfile=None,
-                                encoding="utf-8",
-                                timeout=300,
-                            )
-                            child.setwinsize(int(rows), int(columns))
-                            child.expect(pexpect.EOF)
-                            child.close()
-                            cmd = cmd_2.replace("VAR", child.before.strip())
-                            self.print_slow(cmd.strip())
-                            child = pexpect.spawn(
-                                "/bin/bash",
-                                ["-c", cmd.strip()],
-                                logfile=sys.stdout,
-                                encoding="utf-8",
-                                timeout=300,
-                            )
-                            child.setwinsize(int(rows), int(columns))
-                            child.expect(pexpect.EOF)
-                            child.close()
-                            print(self.prompt, flush=True, end="")
-                        except ValueError as e:
-                            print(e)
-                            print("Error in command: " + cmd)
+                        cmd_1, cmd_2 = cmd[1:].split("$$$")
+                        output = execute_command(cmd_1.strip(), logfile=None)
+                        cmd_2 = cmd_2.replace("VAR", output.strip())
+
+                        self.print_slow(cmd_2.strip())
+                        execute_command(cmd_2, logfile=sys.stdout)
+
+                        print(self.prompt, flush=True, end="")
+                        self.wait = True
+
                     elif cmd[0] == "$":
-                        try:
-                            cmd = cmd[1:]
-                            cmd_1, cmd_2 = cmd.split("$$$")
-                            child = pexpect.spawn(
-                                "/bin/bash",
-                                ["-c", cmd_1.strip()],
-                                logfile=None,
-                                encoding="utf-8",
-                                timeout=300,
-                            )
-                            child.setwinsize(int(rows), int(columns))
-                            child.expect(pexpect.EOF)
-                            child.close()
-                            cmd_2 = cmd_2.replace("VAR", child.before.strip())
-                            self.print_slow(cmd_2.strip())
-                            child = pexpect.pty_spawn.spawn(
-                                cmd_2.strip(), encoding="utf-8", timeout=300
-                            )
-                            child.setwinsize(int(rows), int(columns))
-                            child.interact(
-                                escape_character="\x1d",
-                                input_filter=None,
-                                output_filter=None,
-                            )
-                            child.close()
-                            print(self.prompt, flush=True, end="")
-                            self.wait = True
-                        except ValueError as e:
-                            print(e)
-                            print("Error in command: " + cmd)
-                        except pexpect.exceptions.ExceptionPexpect as e:
-                            print(e)
-                            print("Error in command: " + cmd)
+                        cmd_1, cmd_2 = cmd[1:].split("$$$")
+                        output = execute_command(cmd_1.strip(), logfile=None)
+                        cmd_2 = cmd_2.replace("VAR", output.strip())
+
+                        self.print_slow(cmd_2.strip())
+                        execute_interactive_command(cmd_2.strip())
+
+                        print(self.prompt, flush=True, end="")
+                        self.wait = True
+
+                        # except ValueError as e:
+                        #    print(e)
+                        #    print("Error in command: " + cmd)
+
                     elif cmd[0] == "+":
                         self.interactive_bash()
+
                     elif cmd[0] == "*":
-                        try:
-                            path = cmd[1:]
-                            os.makedirs(path, exist_ok=True)
-                            os.chdir(path)
+                        self.create_directory(cmd[1:])
 
-                            dirpath = os.getcwd()
-                            self.directories.append(dirpath)
-
-                        except PermissionError as e:
-                            print(e)
-                            print("Error in command: " + cmd)
                     else:
                         self.print_slow(cmd.strip())
-                        child = pexpect.spawn(
-                            "/bin/bash",
-                            ["-c", cmd.strip()],
-                            logfile=sys.stdout,
-                            encoding="utf-8",
-                            timeout=300,
-                        )
-                        child.setwinsize(int(rows), int(columns))
-                        child.expect(pexpect.EOF)
-                        child.close()
+                        execute_command(cmd.strip(), logfile=sys.stdout)
                         print(self.prompt, flush=True, end="")
                     time.sleep(1)
+
                     while self.wait:
                         time.sleep(0.3)
+
                     self.wait = True
+
                 except MyException as e:
                     print(e)
                     print("Error in command: " + cmd)
@@ -289,61 +358,17 @@ class CliPlayer:
 
 
 def main():
+    """
+    Main function that configures and runs the cliplayer
+    """
+
+    create_config_file()
+
+    args = get_arguments()
 
     home = str(Path.home())
-
-    if not os.path.isfile(home + "/.config/cliplayer/cliplayer.cfg"):
-        os.makedirs(home + "/.config/cliplayer/", exist_ok=True)
-        copyfile(
-            sys.prefix + "/config/cliplayer.cfg",
-            home + "/.config/cliplayer/cliplayer.cfg",
-        )
-
     config = configparser.ConfigParser(interpolation=None)
     config.read(home + "/.config/cliplayer/cliplayer.cfg")
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-p",
-        "--prompt",
-        default=codecs.decode(config["DEFAULT"]["prompt"], "unicode-escape") + " ",
-        help="prompt to use with playbook. Build it like a normal $PS1 prompt.",
-    )
-    parser.add_argument(
-        "-n",
-        "--next-key",
-        default=config["DEFAULT"]["next_key"],
-        help="key to press for next command. Default: " + config["DEFAULT"]["next_key"],
-    )
-    parser.add_argument(
-        "-i",
-        "--interactive-key",
-        default=config["DEFAULT"]["interactive_key"],
-        help="key to press for a interactive bash as the next command. Default: "
-        + config["DEFAULT"]["interactive_key"],
-    )
-    parser.add_argument(
-        "-b",
-        "--base-speed",
-        default=config["DEFAULT"]["base_speed"],
-        help="base speed to type one character. Default: "
-        + config["DEFAULT"]["base_speed"],
-    )
-    parser.add_argument(
-        "-m",
-        "--max-speed",
-        default=config["DEFAULT"]["max_speed"],
-        help="max speed to type one character. Default: "
-        + config["DEFAULT"]["max_speed"],
-    )
-    parser.add_argument(
-        "playbook",
-        nargs="?",
-        default=config["DEFAULT"]["playbook_name"],
-        help="path and name to playbook. Default: "
-        + config["DEFAULT"]["playbook_name"],
-    )
-    args = parser.parse_args()
 
     player = CliPlayer(
         prompt=args.prompt,
@@ -356,10 +381,6 @@ def main():
     )
 
     player.play()
-
-
-class MyException(Exception):
-    pass
 
 
 if __name__ == "__main__":
