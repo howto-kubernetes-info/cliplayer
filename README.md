@@ -1,8 +1,8 @@
 # cliplayer
-cliplayer helps to script shell based lectures or screencast tutorials. The player takes a playbook with shell commands that are executed live like you write them at this moment.
+cliplayer helps to script shell based lectures or screencast trainings. The player takes a playbook with shell commands that are executed live like you write them at this moment. 
 
 ## Motivation
-When you holding lectures or recording screencast you often need to devide your concentration between talking and typing at the same time. This cliplayer helps you to concentrate more on what you want to teach instead of what you need to type.
+When holding lectures or recording screencast you often need to devide your concentration between talking and typing at the same time. This cliplayer helps you to concentrate more on what you want to teach instead of what you need to type.
 
 ## Installation
 
@@ -55,38 +55,38 @@ There are a few playbook options that control how and if a line in a playbook is
 
 1. "!"
 
-    Comment in the playbook. The content of this line will not be shown or executed
+    Comment in the playbook. The content of this line will not be shown or executed.
 
     Example:
 
         ! This is a comment with some important information
 
 
-1. " "  
+1. " "
     
     If no special character is used as the first character, the command is printed
-    and executed as a normal non interactive shell command
+    and executed as a normal non interactive shell command.
 
     Examples:
 
-        echo "Get free tutorials for Git, Docker, Kubernetes and other topics" > howto-kubernetes.info
+        echo "Get playbooks for Git, Docker, Kubernetes and other topics" > howto-kubernetes.info
         cat howto-kubernetes.info
 
 
 1. "*"
 
-    Create a directory and execute following commands in this directory
+    Create a directory and execute the following playbook commands in this directory. These directories can be removed at the end of the training or stopping the playbook with Ctrl-C.
 
     Examples:
 
-        * ../../git_tutorial
-        * /tmp/git_tutorial
+        * ../../git_training
+        * /tmp/git_training
 
 
 1. "_"
 
     Execute a command and get interactive control over it.
-    This is used since you don't want or can't automate every command.
+    This is used since you don't want or can't automate every command. 
 
     Examples:
 
@@ -122,10 +122,12 @@ There are a few playbook options that control how and if a line in a playbook is
     Examples:
 
         +
-        + You can write everything you want behind a +. It will not be shown or executed
+        + You can write everything you want behind a +. It will not be shown or executed.
+Hint
+>Don't miss, that you can get a interactive Bash after every comand in the playbook by pressing the pause key on your keyboard. If your keyboard has not pause key, reconfigure the player with the configfile or while starting cliplayer.
 
 ## Links
-[Official cliplayer video tutorial](https://howto-kubernetes.info/cliplayer/tutorial)
+[Official cliplayer video training](https://howto-kubernetes.info/cliplayer/tutorial)
 
 [Official playbook examples](https://howto-kubernetes.info/cliplayer/playbook_examples)
 
