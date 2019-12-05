@@ -21,10 +21,10 @@ When holding lectures or recording screencast you often need to devide your conc
        Change the PS1 prompt of the player
     
     -n NEXT_KEY
-       key to press to execute the next command. Default: Scroll Lock
+       key to press to execute the next command. Default: Enter
 
     -i INTERACTIVE_KEY
-       key to press for a interactive bash as the next command. Default: Pause
+       key to press for a interactive bash as the next command. Default: End
 
     -b BASE_SPEED
        Set the base speed of typing one character. Default: 0.03
@@ -44,8 +44,8 @@ After the first usage, there is a configuration file in the home directory to ma
     [DEFAULT]
     prompt = \033[94mhowto-kubernetes.info \033[92m- \033[91mKubernetes Training \033[0m$
     playbook_name = ./playbook
-    next_key = scroll_lock
-    interactive_key = pause
+    next_key = enter
+    interactive_key = end
     base_speed = 0.03
     max_speed = 0.15
 
@@ -123,8 +123,34 @@ There are a few playbook options that control how and if a line in a playbook is
 
         +
         + You can write everything you want behind a +. It will not be shown or executed.
+
+
+## Special keys
+
+1. "Enter"
+
+    To execute the next command of the playbook, press the "Enter" key.
+
+    
+1. "End"
+
+    To get a interactive bash, press the "End" key after a playbook command.
+
+
+1. "Ctrl-]"
+
+    To exit a interactive bash sequence, press "Ctrl-]".
+
+
+1. "Ctrl-C"
+
+    To exit the cliplayer before the playbook is finished, press "Ctrl-C". 
+
+
+
 Hint
->Don't miss, that you can get a interactive Bash after every comand in the playbook by pressing the pause key on your keyboard. If your keyboard has not pause key, reconfigure the player with the configfile or while starting cliplayer.
+> The keys are chosen because most notebooks have them. If your you don't like the default keys, reconfigure the player with the configuration file or while starting cliplayer.
+
 
 ## Links
 [Official cliplayer video training](https://howto-kubernetes.info/cliplayer/tutorial)

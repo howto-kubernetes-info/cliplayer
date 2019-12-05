@@ -234,6 +234,7 @@ class CliPlayer:
         Called on end of playbook or after Ctrl-C to clean up directories
         that are created with the playbook option *
         """
+        os.system("stty echo")
         if self.directories:
             print("\n**** Training Cleanup! ****\n")
             if len(self.directories) > 1:
@@ -284,7 +285,7 @@ class CliPlayer:
         """
         Main function that runs a loop to play all commands of a existing playbook
         """
-
+        os.system("stty -echo")
         self.start_key_listener()
 
         playbook = self.load_playbook()
