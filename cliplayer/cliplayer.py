@@ -285,10 +285,10 @@ class CliPlayer:
         """
         Main function that runs a loop to play all commands of a existing playbook
         """
-        os.system("stty -echo")
         self.start_key_listener()
 
         playbook = self.load_playbook()
+        os.system("stty -echo")
         print(self.prompt, flush=True, end="")
 
         while self.wait:
@@ -337,6 +337,7 @@ class CliPlayer:
 
                     elif cmd[0] == "+":
                         self.interactive_bash()
+                        self.wait = True
 
                     elif cmd[0] == "*":
                         self.create_directory(cmd[1:])
@@ -346,6 +347,7 @@ class CliPlayer:
                         self.print_slow(cmd.strip())
                         execute_command(cmd.strip(), logfile=sys.stdout)
                         print(self.prompt, flush=True, end="")
+                        self.wait = True
                     time.sleep(1)
 
                     while self.wait:
