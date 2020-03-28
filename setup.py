@@ -16,8 +16,8 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     scripts=['bin/cliplayer'],
     install_requires=[
-        'pynput',
-        'pexpect'
+        'pynput>=1.6.8',
+        'pexpect>=4.8.0'
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
