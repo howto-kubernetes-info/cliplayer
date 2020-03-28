@@ -2,7 +2,10 @@
 cliplayer helps to script shell based lectures or screencast trainings. The player takes a playbook with shell commands that are executed live like you write them at this moment. 
 
 ## Motivation
-When holding lectures or recording screencast you often need to devide your concentration between talking and typing at the same time. This cliplayer helps you to concentrate more on what you want to teach instead of what you need to type.
+When holding lectures or recording screencast you often need to devide your attention between talking and typing at the same time. This cliplayer helps you to concentrate more on what you want to teach instead of what you need to type.
+
+## Hint
+Corona Edition - howto-kubernetes.info is not live at the moment
 
 ## Installation
 
@@ -153,10 +156,6 @@ Hint
 
 
 ## Links
-[Official cliplayer video training](https://howto-kubernetes.info/cliplayer/tutorial)
-
-[Official playbook examples](https://howto-kubernetes.info/cliplayer/playbook_examples)
-
 [Key codes for next_key and interactive_key options](https://pynput.readthedocs.io/en/latest/keyboard.html#pynput.keyboard.Key)
 
 [How to create a prompt](https://wiki.archlinux.org/index.php/Bash/Prompt_customization)

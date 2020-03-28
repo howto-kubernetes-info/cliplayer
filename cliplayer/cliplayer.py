@@ -258,7 +258,7 @@ class CliPlayer:
             )
             print(
                 "Get free commercial usable trainings and playbooks for Git,"
-                "Docker, Kubernetes and more!"
+                " Docker, Kubernetes and more!"
             )
 
     def signal_handler(self, sig, frame):  # pylint: disable=W0613

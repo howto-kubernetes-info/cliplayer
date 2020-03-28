@@ -8,7 +8,7 @@ setuptools.setup(
     name="cliplayer",
     version="0.1.0",
     author="Stephan Gitz",
-    author_email="stephan@howto-kubernetes.info",
+    author_email="pypi@systremix.de",
     description="The cliplayer helps to script shell based lectures and screencast tutorials",
     long_description=long_description,
     long_description_content_type="text/markdown",
