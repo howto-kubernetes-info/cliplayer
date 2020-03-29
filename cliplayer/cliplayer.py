@@ -188,8 +188,8 @@ class CliPlayer:
         Function to create a directory and change the working directory to it
         """
         try:
-            os.makedirs(path, exist_ok=True)
-            os.chdir(path)
+            os.makedirs(path.strip(), exist_ok=True)
+            os.chdir(path.strip())
 
             dirpath = os.getcwd()
             self.directories.append(dirpath)
