@@ -1,43 +1,21 @@
-! This is a comment that is not shown or executed
-! the next command creates a directory in /tmp. Every command is executed in this directory till you change it
-*/tmp/cliplayer_tutorial
-
-! execute the next command by pressing the scroll lock key
-echo "The cliplayer helps you to script shell based lectures or screencasts." > howto-kubernetes.info
-echo "Build a playbook for your lecture and execute it like you type it live." >> howto-kubernetes.info
-echo "There are a few playbook options to define how and if a command is executed." >> howto-kubernetes.info
-echo "" >> howto-kubernetes.info
-echo "A * at the beginning of a line silently creates a directory. All following commands are executed in this directory" >> howto-kubernetes.info
-echo "The playbook line '*/tmp/cliplayer_tutorial' will create a directory in /tmp/ with the name cliplayer_tutorial" >> howto-kubernetes.info
-echo "" >> howto-kubernetes.info
+clear
+# CLIplayer - Corona Edition
+# The cliplayer helps you to make bash based screencasts or trainings
+# To use the cliplayer you need to learn to write playbooks
+# You can use ! * _ = $ + as special first charaters to control your playbook
+# Lets take a look
 pwd
-
-echo "A ! at the beginning of a line defines a comment. It will not be shown or executed." >> howto-kubernetes.info
-echo "" >> howto-kubernetes.info
-
-echo "A _ at the beginning of a line will execute the command and give you interactive control over it." >> howto-kubernetes.info
-echo "The playbook line '_vim howto-kubernetes.info' will open the file with vim and gives you control over vim." >> howto-kubernetes.info
-echo "" >> howto-kubernetes.info
-_vim howto-kubernetes.info
-
-echo "A = at the beginning of a line starts a two part command. The first part is executed but not shown. The output of the first part, replace a variable in the second non interactive command part. The two command parts are seperated by three dollar signs "$$$". The variable that changed is named VAR." >> howto-kubernetes.info
-echo "The command '= LANG=EN_en date +%A $$$ echo "This tutorial is played on VAR"' will silently get the name of today and print it with the second part of the command" >> howto-kubernetes.info
-echo "" >> howto-kubernetes.info
-= LANG=EN_en date +%A $$$ echo "This tutorial is played on VAR"
-
-echo "A $ at the beginning of a line is like the = option with the difference that you get interactive control over the second command." >> howto-kubernetes.info
-echo "" >> howto-kubernetes.info
-$ LANG=EN_en date +%A $$$ vim VAR_diary
-
-echo "A + at the beginning of a line gives you controll over a interactive bash that can be left with Ctrl-]." >> howto-kubernetes.info
-echo "" >> howto-kubernetes.info
-+
-
-echo "Get ready to use playbooks under howto-kubernetes.info/playbooks" >> howto-kubernetes.info
-echo "If you like active learning like we do, record your screencast with a active learning warning!" >> howto-kubernetes.info
-echo "Read more about active learning under howto-kubernetes.info/active-learning" >> howto-kubernetes.info
-echo "Have fun with the cliplayer and make awesome lectures and screencasts!" >> howto-kubernetes.info
-
-cat howto-kubernetes.info
-
-rm /tmp/cliplayer_tutorial -rf
+! The next command will create a directory
+* /tmp/cliplayer-training
+pwd
+echo "Hello CLIplayer world" > Readme.txt
+! a underline as first caracter will give you interactive control over the executed command
+_ vim Readme.txt
+echo "You can get interactive control on every point in the playbook" >> Readme.txt
+! Press the end key to get a bash and do a ls to show you have control
+echo "Leave an interactive bash with CTRL-]" >> Readme.txt
+= LANG=EN_en date +%A $$$ # Today is VAR and we should all practice physical distancing
+# You also can get interactive control on specific points in the playbook
++ Interactive bash to do ls again
+$ LANG=EN_en date +%B $$$ vim Corona_Diary_VAR
+# Have fun with cliplayer and make awesome tutorials

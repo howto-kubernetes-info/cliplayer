@@ -5,7 +5,7 @@ cliplayer helps to script shell based lectures or screencast trainings. The play
 When holding lectures or recording screencast you often need to devide your attention between talking and typing at the same time. This cliplayer helps you to concentrate more on what you want to teach instead of what you need to type.
 
 ## Hint
-Corona Edition - howto-kubernetes.info is not live at the moment
+Corona Edition - It was planed to release the player along with an other project. Since many people are now forced to stay at home, maybe the cliplayer can help some people to make awesome bash tutorials.
 
 ## Installation
 
@@ -45,7 +45,7 @@ After the first usage, there is a configuration file in the home directory to ma
 
     $ cat ~/.config/cliplayer/cliplayer.cfg
     [DEFAULT]
-    prompt = \033[94mhowto-kubernetes.info \033[92m- \033[91mKubernetes Training \033[0m$
+    prompt = \033[91mCLIplayer Training \033[92m$\033[0m
     playbook_name = ./playbook
     next_key = enter
     interactive_key = end
@@ -72,8 +72,8 @@ There are a few playbook options that control how and if a line in a playbook is
 
     Examples:
 
-        echo "Get playbooks for Git, Docker, Kubernetes and other topics" > howto-kubernetes.info
-        cat howto-kubernetes.info
+        echo "Hello World" > Readme.txt
+        cat Readme.txt
 
 
 1. "*"
@@ -82,8 +82,8 @@ There are a few playbook options that control how and if a line in a playbook is
 
     Examples:
 
-        * ../../git_training
-        * /tmp/git_training
+        * ../../awesome_training
+        * /tmp/awesome_training
 
 
 1. "_"
@@ -94,7 +94,7 @@ There are a few playbook options that control how and if a line in a playbook is
     Examples:
 
        _vim Readme.txt
-       _man docker
+       _man bash
 
 
 1. "="
@@ -105,7 +105,7 @@ There are a few playbook options that control how and if a line in a playbook is
 
     Example:
 
-        = cat .git/refs/heads/master | cut -c1-7 $$$ git cat-file -p VAR
+        = date | cut -c12-20 $$$ # The time is VAR
 
 
 1. "$"
@@ -114,7 +114,7 @@ There are a few playbook options that control how and if a line in a playbook is
 
     Example:
 
-        = git rev-parse HEAD^^^ | cut -c1-7 $$$ git revert VAR
+        $ date +%B $$$ vim Corona_Diary_VAR
 
 
 1. "+"
@@ -137,12 +137,12 @@ There are a few playbook options that control how and if a line in a playbook is
     
 1. "End"
 
-    To get a interactive bash, press the "End" key after a playbook command.
+    To get an interactive bash, press the "End" key after a playbook command.
 
 
 1. "Ctrl-]"
 
-    To exit a interactive bash sequence, press "Ctrl-]".
+    To exit an interactive bash sequence, press "Ctrl-]".
 
 
 1. "Ctrl-C"
@@ -150,12 +150,17 @@ There are a few playbook options that control how and if a line in a playbook is
     To exit the cliplayer before the playbook is finished, press "Ctrl-C". 
 
 
-
 Hint
 > The keys are chosen because most notebooks have them. If your you don't like the default keys, reconfigure the player with the configuration file or while starting cliplayer.
 
+## Build and install from source
+    $ clone https://github.com/howto-kubernetes-info/cliplayer.git
+    $ cd cliplayer
+    $ python3 setup.py sdist bdist_wheel
+    $ pip install --force-reinstall dist/cliplayer-0.1.2.tar.gz  # Change the version number to the right version
 
 ## Links
+
 [Key codes for next_key and interactive_key options](https://pynput.readthedocs.io/en/latest/keyboard.html#pynput.keyboard.Key)
 
 [How to create a prompt](https://wiki.archlinux.org/index.php/Bash/Prompt_customization)
