@@ -4,8 +4,8 @@ cliplayer helps to script shell based lectures or screencast trainings. The play
 ## Motivation
 When holding lectures or recording screencast you often need to devide your attention between talking and typing at the same time. This cliplayer helps you to concentrate more on what you want to teach instead of what you need to type.
 
-## Hint
-Corona Edition - It was planed to release the player along with an other project. Since many people are now forced to stay at home, maybe the cliplayer can help some people to make awesome bash tutorials.
+## Corona Edition 
+It was planed to release the player along with an other project. Since many people are now forced to stay at home, maybe the cliplayer can help some people to make awesome bash tutorials.
 
 ## Installation
 
@@ -158,6 +158,9 @@ Hint
     $ cd cliplayer
     $ python3 setup.py sdist bdist_wheel
     $ pip install --force-reinstall dist/cliplayer-0.1.2.tar.gz  # Change the version number to the right version
+
+## Video training
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=bXN00QfzLMs " target="_blank"><img src="http://img.youtube.com/vi/bXN00QfzLMs/0.jpg" alt="CLIplayer training video" width="240" height="180" border="10" /></a>
 
 ## Links
 

@@ -1,21 +1,30 @@
 clear
-# CLIplayer - Corona Edition
+
+# How to use the CLIplayer - Screencast
 # The cliplayer helps you to make bash based screencasts or trainings
 # To use the cliplayer you need to learn to write playbooks
-# You can use ! * _ = $ + as special first charaters to control your playbook
 # Lets take a look
+
+! a underline as first caracter will give you interactive control over the executed command
+_ vim playbook
+
 pwd
 ! The next command will create a directory
 * /tmp/cliplayer-training
 pwd
-echo "Hello CLIplayer world" > Readme.txt
-! a underline as first caracter will give you interactive control over the executed command
-_ vim Readme.txt
-echo "You can get interactive control on every point in the playbook" >> Readme.txt
-! Press the end key to get a bash and do a ls to show you have control
+
+echo "You can get interactive control on every point in the playbook" > Readme.txt
 echo "Leave an interactive bash with CTRL-]" >> Readme.txt
-= LANG=EN_en date +%A $$$ # Today is VAR and we should all practice physical distancing
+! Press the end key to get a bash and do a ls and a cat to show you have control
+
+! = starts a non interactive two part command. The output of the first part is inserted in the variable VAR of the second part 
+= pwgen 10 1 $$$ echo "The filename VAR.txt is not known at the time the playbook is written" > VAR.txt
+
+! $ starts a interactive two part command. The output of the first part is inserted in the variable VAR of the second part 
+$ ls -1 | grep -v Readme.txt $$$ vim VAR
+
 # You also can get interactive control on specific points in the playbook
-+ Interactive bash to do ls again
-$ LANG=EN_en date +%B $$$ vim Corona_Diary_VAR
-# Have fun with cliplayer and make awesome tutorials
++ Execute ls and show the cliplayer config file unter ~/.config/cliplayer/cliplayer.cfg
+
+! show the cliplayer options
+cliplayer --help
