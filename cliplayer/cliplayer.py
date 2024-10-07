@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-This is a Module to play a playbook with bash commands like they typed in the moment
+cliplayer: A module to play playbooks with Bash commands as if they are being typed in real-time.
 """
 
 import argparse
@@ -11,13 +11,81 @@ import os
 import signal
 import subprocess
 import sys
+import tty
+import termios
+import select
 import time
 import random
 from shutil import copyfile
 from pathlib import Path
 import pexpect
-from pynput.keyboard import Key, Listener
 
+KEY_NAME_MAPPING = {
+    'ENTER': '\n',
+    'RETURN': '\n',
+    'END': '\x1b[F',
+    'HOME': '\x1b[H',
+    'INSERT': '\x1b[2~',
+    'DELETE': '\x1b[3~',
+    'PAGE_UP': '\x1b[5~',
+    'PAGE_DOWN': '\x1b[6~',
+    'UP': '\x1b[A',
+    'DOWN': '\x1b[B',
+    'LEFT': '\x1b[D',
+    'RIGHT': '\x1b[C',
+    'ESC': '\x1b',
+    'SPACE': ' ',
+    'TAB': '\t',
+    'BACKSPACE': '\x7f',
+}
+
+def map_key(key_str):
+    """
+    Maps a key string from the configuration to its corresponding escape sequence or character.
+    Supports named keys and single character keys.
+    """
+
+    key_str_upper = key_str.upper()
+    if key_str_upper in KEY_NAME_MAPPING:
+        return KEY_NAME_MAPPING[key_str_upper]
+    if len(key_str) == 1:
+        return key_str
+    raise ValueError(f"Unknown key: {key_str}")
+
+class KeyCapture:
+    """
+    Captures key presses from the user.
+    """
+
+    def __init__(self):
+        self.fd = sys.stdin.fileno()
+        self.old_settings = termios.tcgetattr(self.fd)
+        tty.setcbreak(self.fd)
+        self.key_pressed = None
+
+    def get_key(self):
+        """
+        Get the key pressed by the user.
+        """
+
+        dr = select.select([sys.stdin], [], [], 0.05)
+        if dr:
+            c1 = sys.stdin.read(1)
+            if c1 == '\x1b':
+                # Escape sequence
+                seq = c1
+                # Read additional characters
+                while True:
+                    c = sys.stdin.read(1)
+                    seq += c
+                    # Break if no more characters are coming
+                    if c.isalpha() or c == '~':
+                        break
+                self.key_pressed = seq
+            else:
+                self.key_pressed = c1
+            return self.key_pressed
+        return None
 
 def get_arguments():
     """
@@ -70,7 +138,6 @@ def get_arguments():
     )
     return parser.parse_args()
 
-
 def create_config_file():
     """
     Create a config file in the home directory if it is not there already
@@ -83,10 +150,9 @@ def create_config_file():
             home + "/.config/cliplayer/cliplayer.cfg",
         )
 
-
 def execute_interactive_command(cmd):
     """
-    Function to execute a interactive command and return the output of the command if there is some
+    Function to execute an interactive command and return the output of the command if there is some
     """
     try:
         rows, columns = subprocess.check_output(["stty", "size"]).decode().split()
@@ -97,11 +163,11 @@ def execute_interactive_command(cmd):
         )
         child.close()
         return child.before
+
     except pexpect.exceptions.ExceptionPexpect as e:
         print(e)
         print("Error in command: " + cmd)
         return None
-
 
 def execute_command(cmd, logfile):
     """
@@ -126,18 +192,15 @@ def execute_command(cmd, logfile):
         print("Error in command: " + cmd)
         return None
 
-
 class MyException(Exception):
     """
     Basic Exception
     """
 
-
-class CliPlayer:
+class CliPlayer: # pylint: disable=too-few-public-methods
     """
-    Class to play playbooks with bash commands like typing them at the moment
+    Class to play playbooks with Bash commands as if they are being typed in real-time.
     """
-
     wait = True
     directories = []
 
@@ -151,20 +214,36 @@ class CliPlayer:
             show_message,
             playbook,
     ):
+        """
+        Initializes the CliPlayer with the provided configurations.
+        """
         self.prompt = prompt
         self.base_speed = base_speed
         self.max_speed = max_speed
-        self.next_key = next_key
-        self.interactive_key = interactive_key
+
+        try:
+            self.next_key = map_key(next_key)
+        except ValueError as e:
+            print(f"Invalid next_key: {next_key}. {e}")
+            sys.exit(1)
+        try:
+            self.interactive_key = map_key(interactive_key)
+        except ValueError as e:
+            print(f"Invalid interactive_key: {interactive_key}. {e}")
+            sys.exit(1)
+
         self.playbook = playbook
         self.show_message = show_message
+        self.key_capture = KeyCapture()
+        self.wait = True
+        self.directories = []
 
     def load_playbook(self):
         """
         Loading commands from a playbook and returning a list with the commands.
         """
         try:
-            playbook = open(self.playbook, "r")
+            playbook = open(self.playbook, "r",  encoding="utf-8")
         except FileNotFoundError:
             print("You need to provide a playbook")
             sys.exit(0)
@@ -181,7 +260,7 @@ class CliPlayer:
             print(letter, flush=True, end="")
             time.sleep(random.uniform(float(self.base_speed), float(self.max_speed)))
         time.sleep(0.1)
-        print("")
+        print("\r", flush=True)
 
     def create_directory(self, path):
         """
@@ -224,9 +303,11 @@ class CliPlayer:
         Called on every key press to check if the next command
         or an interactive bash should be executed
         """
-        if key == getattr(Key, self.next_key):
+
+        #print(f"DEBUG: on_press called with key: {repr(key)}")  # Debug-Ausgabe
+        if key == self.next_key:
             self.wait = False
-        if key == getattr(Key, self.interactive_key):
+        if key == self.interactive_key:
             self.interactive_bash()
 
     def cleanup(self):
@@ -234,9 +315,10 @@ class CliPlayer:
         Called on end of playbook or after Ctrl-C to clean up directories
         that are created with the playbook option *
         """
+
         os.system("stty echo")
         if self.directories:
-            print("\n**** Training Cleanup! ****\n")
+            print("\r\n**** Training Cleanup! ****\n")
             if len(self.directories) > 1:
                 print("Do you want to remove the following directories?: ")
             else:
@@ -249,8 +331,10 @@ class CliPlayer:
                 for directory in self.directories:
                     os.system("rm -rf " + directory)
             else:
-                print("\nI don't clean up.")
-        print("\n**** End Of Training ****")
+                print("\r\nI don't clean up.")
+
+        print("\r\n**** End Of Training ****\r\n")
+
         if self.show_message.lower() == "true":
             print(
                 "Remember to visit howto-kubernetes.info - "
@@ -265,34 +349,26 @@ class CliPlayer:
         """
         Catch Ctrl-C and clean up the remains before exiting the cliplayer
         """
-        print("\nYou stopped cliplayer with Ctrl+C!")
+
+        print("\r\nYou stopped cliplayer with Ctrl+C!")
         self.cleanup()
         sys.exit(0)
 
-    def start_key_listener(self):
-        """
-        Start to listen for key presses and Ctrl-C sequence
-        """
-        signal.signal(signal.SIGINT, self.signal_handler)
-
-        listener = Listener(on_press=self.on_press)
-        try:
-            listener.start()
-        except MyException as e:
-            print("Listener exception:" + e)
-
     def play(self):
         """
-        Main function that runs a loop to play all commands of a existing playbook
+        Main function that runs a loop to play all commands of an existing playbook
         """
-        self.start_key_listener()
 
         playbook = self.load_playbook()
         os.system("stty -echo")
         print(self.prompt, flush=True, end="")
 
         while self.wait:
-            time.sleep(0.3)
+            key = self.key_capture.get_key()
+            if key is not None:
+                #print("key: " + str(ord(key)))
+                self.on_press(key)
+            time.sleep(0.05)
 
         for cmd in playbook:
             if len(cmd.strip()) != 0:
@@ -331,10 +407,6 @@ class CliPlayer:
                         print(self.prompt, flush=True, end="")
                         self.wait = True
 
-                        # except ValueError as e:
-                        #    print(e)
-                        #    print("Error in command: " + cmd)
-
                     elif cmd[0] == "+":
                         self.interactive_bash()
                         self.wait = True
@@ -351,15 +423,17 @@ class CliPlayer:
                     time.sleep(1)
 
                     while self.wait:
-                        time.sleep(0.3)
-
+                        key = self.key_capture.get_key()
+                        if key:
+                            #print("key: " + str(key))
+                            self.on_press(key)
+                        time.sleep(0.05)
                     self.wait = True
 
                 except MyException as e:
                     print(e)
                     print("Error in command: " + cmd)
         self.cleanup()
-
 
 def main():
     """
@@ -384,8 +458,9 @@ def main():
         playbook=args.playbook,
     )
 
-    player.play()
+    signal.signal(signal.SIGINT, player.signal_handler)
 
+    player.play()
 
 if __name__ == "__main__":
     main()

@@ -5,11 +5,13 @@ clear
 # To use the cliplayer you need to learn to write playbooks
 # Lets take a look
 
+! a exclamation mark as a first character is a comment
 ! a underline as first caracter will give you interactive control over the executed command
+! after the next command, you are in the vim editor. Exit with typing the normal exit command :wq
 _ vim playbook
 
 pwd
-! The next command will create a directory
+! The next command will create a directory in the background
 * /tmp/cliplayer-training
 pwd
 
