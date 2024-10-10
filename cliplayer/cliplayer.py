@@ -20,34 +20,67 @@ from shutil import copyfile
 from pathlib import Path
 import pexpect
 
-KEY_NAME_MAPPING = {
-    'ENTER': '\n',
-    'RETURN': '\n',
-    'END': '\x1b[F',
-    'HOME': '\x1b[H',
-    'INSERT': '\x1b[2~',
-    'DELETE': '\x1b[3~',
-    'PAGE_UP': '\x1b[5~',
-    'PAGE_DOWN': '\x1b[6~',
-    'UP': '\x1b[A',
-    'DOWN': '\x1b[B',
-    'LEFT': '\x1b[D',
-    'RIGHT': '\x1b[C',
-    'ESC': '\x1b',
-    'SPACE': ' ',
-    'TAB': '\t',
-    'BACKSPACE': '\x7f',
-}
+def load_key_mappings():
+    """
+    Load key mappings from the key_mappings.cfg file or create it.
+    """
 
-def map_key(key_str):
+    home = str(Path.home())
+    key_mapping_config_path = home + "/.config/cliplayer/key_mappings.cfg"
+    config = configparser.ConfigParser()
+    config.optionxform = str  # Preserve case of keys
+
+    if not os.path.isfile(key_mapping_config_path):
+        os.makedirs(os.path.dirname(key_mapping_config_path), exist_ok=True)
+        config["KEY_MAPPINGS"] = {
+            'ENTER': '\\n',
+            'RETURN': '\\n',
+            'END': '\\x1b[F',
+            'HOME': '\\x1b[H',
+            'INSERT': '\\x1b[2~',
+            'DELETE': '\\x1b[3~',
+            'PAGE_UP': '\\x1b[5~',
+            'PAGE_DOWN': '\\x1b[6~',
+            'UP': '\\x1b[A',
+            'DOWN': '\\x1b[B',
+            'LEFT': '\\x1b[D',
+            'RIGHT': '\\x1b[C',
+            'ESC': '\\x1b',
+            'SPACE': '\\x20',
+            'TAB': '\\t',
+            'BACKSPACE': '\\x7f',
+        }
+        with open(key_mapping_config_path, 'w', encoding='utf-8') as configfile:
+            config.write(configfile)
+        print(f"Standard key_mappings.cfg created at: {key_mapping_config_path}")
+
+    config.read(key_mapping_config_path)
+
+    if "KEY_MAPPINGS" not in config:
+        raise KeyError("KEY_MAPPINGS not in key_mappings.cfg")
+
+    key_mappings = {}
+    for key, value in config["KEY_MAPPINGS"].items():
+        try:
+            decoded_value = codecs.decode(value, 'unicode_escape')
+        except UnicodeDecodeError as e:
+            print(f"Error while decoding Key Mapping for {key}: {e}")
+            decoded_value = value
+        key_upper = key.upper()
+        key_mappings[key_upper] = decoded_value
+        print(f"Loaded key mapping: {key_upper} -> {repr(decoded_value)}")
+
+    return key_mappings
+
+def map_key(key_str, key_mappings):
     """
     Maps a key string from the configuration to its corresponding escape sequence or character.
     Supports named keys and single character keys.
     """
 
     key_str_upper = key_str.upper()
-    if key_str_upper in KEY_NAME_MAPPING:
-        return KEY_NAME_MAPPING[key_str_upper]
+    if key_str_upper in key_mappings:
+        return key_mappings[key_str_upper]
     if len(key_str) == 1:
         return key_str
     raise ValueError(f"Unknown key: {key_str}")
@@ -213,6 +246,7 @@ class CliPlayer: # pylint: disable=too-few-public-methods
             interactive_key,
             show_message,
             playbook,
+            key_mappings,
     ):
         """
         Initializes the CliPlayer with the provided configurations.
@@ -222,12 +256,12 @@ class CliPlayer: # pylint: disable=too-few-public-methods
         self.max_speed = max_speed
 
         try:
-            self.next_key = map_key(next_key)
+            self.next_key = map_key(next_key, key_mappings)
         except ValueError as e:
             print(f"Invalid next_key: {next_key}. {e}")
             sys.exit(1)
         try:
-            self.interactive_key = map_key(interactive_key)
+            self.interactive_key = map_key(interactive_key, key_mappings)
         except ValueError as e:
             print(f"Invalid interactive_key: {interactive_key}. {e}")
             sys.exit(1)
@@ -447,6 +481,8 @@ def main():
     config = configparser.ConfigParser(interpolation=None)
     config.read(home + "/.config/cliplayer/cliplayer.cfg")
 
+    key_mappings = load_key_mappings()
+
     player = CliPlayer(
         prompt=args.prompt,
         base_speed=args.base_speed,
@@ -455,6 +491,7 @@ def main():
         interactive_key=args.interactive_key,
         show_message=config["DEFAULT"]["message"],
         playbook=args.playbook,
+        key_mappings=key_mappings,
     )
 
     signal.signal(signal.SIGINT, player.signal_handler)
