@@ -242,14 +242,13 @@ class CliPlayer: # pylint: disable=too-few-public-methods
         """
         Loading commands from a playbook and returning a list with the commands.
         """
+
         try:
-            playbook = open(self.playbook, "r",  encoding="utf-8")
+            with open(self.playbook, "r", encoding="utf-8") as playbook:
+                commands = [command.strip() for command in playbook if command.strip()]
         except FileNotFoundError:
             print("You need to provide a playbook")
             sys.exit(0)
-        commands = []
-        for command in playbook:
-            commands.append(command.strip())
         return commands
 
     def print_slow(self, string):
