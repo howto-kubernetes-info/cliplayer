@@ -22,37 +22,13 @@ import pexpect
 
 def load_key_mappings():
     """
-    Load key mappings from the key_mappings.cfg file or create it.
+    Load key mappings from the key_mappings.cfg file.
     """
 
     home = str(Path.home())
     key_mapping_config_path = home + "/.config/cliplayer/key_mappings.cfg"
     config = configparser.ConfigParser()
     config.optionxform = str  # Preserve case of keys
-
-    if not os.path.isfile(key_mapping_config_path):
-        os.makedirs(os.path.dirname(key_mapping_config_path), exist_ok=True)
-        config["KEY_MAPPINGS"] = {
-            'ENTER': '\\x0a',
-            'RETURN': '\\x0a',
-            'END': '\\x1b\\x5b\\x46',
-            'HOME': '\\x1b\\x5b\\x48',
-            'INSERT': '\\x1b\\x5b\\x32\\x7e',
-            'DELETE': '\\x1b\\x5b\\x33\\x7e',
-            'PAGE_UP': '\\x1b\\x5b\\x35\\x7e',
-            'PAGE_DOWN': '\\x1b\\x5b\\x36\\x7e',
-            'UP': '\\x1b\\x5b\\x41',
-            'DOWN': '\\x1b\\x5b\\x42',
-            'LEFT': '\\x1b\\x5b\\x44',
-            'RIGHT': '\\x1b\\x5b\\x43',
-            'ESC': '\\x1b',
-            'SPACE': '\\x20',
-            'TAB': '\\x09',
-            'BACKSPACE': '\\x1b\\x5b\\x33\\x7e',
-        }
-        with open(key_mapping_config_path, 'w', encoding='utf-8') as configfile:
-            config.write(configfile)
-        print(f"Standard key_mappings.cfg created at: {key_mapping_config_path}")
 
     config.read(key_mapping_config_path)
 
@@ -181,7 +157,7 @@ def get_arguments():
     )
     return parser.parse_args()
 
-def create_config_file():
+def create_config_files():
     """
     Create a config file in the home directory if it is not there already
     """
@@ -195,6 +171,13 @@ def create_config_file():
         )
         print(f"Standard cliplayer.cfg created at: {config_file_path}")
 
+    key_mapping_file_path = home + "/.config/cliplayer/key_mappings.cfg"
+    if not os.path.isfile(key_mapping_file_path):
+        copyfile(
+            sys.prefix + "/config/key_mappings.cfg",
+            home + "/.config/cliplayer/key_mappings.cfg",
+        )
+        print(f"Standard key_mappings.cfg created at: {key_mapping_file_path}")
 
 def execute_interactive_command(cmd):
     """
@@ -521,7 +504,7 @@ def main():
     Main function that configures and runs the cliplayer
     """
 
-    create_config_file()
+    create_config_files()
 
     args = get_arguments()
 

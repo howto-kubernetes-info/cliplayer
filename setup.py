@@ -1,8 +1,12 @@
 import setuptools
 import os
+from pathlib import Path
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
+
+config_dir = Path("config")
+config_files = [str(path) for path in config_dir.glob("*.cfg")]
 
 setuptools.setup(
     name="cliplayer",
@@ -16,8 +20,7 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     scripts=['bin/cliplayer'],
     install_requires=[
-        'pynput>=1.6.8',
-        'pexpect>=4.8.0'
+        'pexpect>=4.9.0'
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
@@ -25,5 +28,5 @@ setuptools.setup(
         "Operating System :: POSIX",
     ],
     python_requires='>=3.6',
-    data_files=[('config/',['config/cliplayer.cfg'])],
+    data_files=[('config/', config_files)],
 )
