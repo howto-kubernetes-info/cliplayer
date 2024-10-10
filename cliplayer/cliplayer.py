@@ -33,22 +33,22 @@ def load_key_mappings():
     if not os.path.isfile(key_mapping_config_path):
         os.makedirs(os.path.dirname(key_mapping_config_path), exist_ok=True)
         config["KEY_MAPPINGS"] = {
-            'ENTER': '\\n',
-            'RETURN': '\\n',
-            'END': '\\x1b[F',
-            'HOME': '\\x1b[H',
-            'INSERT': '\\x1b[2~',
-            'DELETE': '\\x1b[3~',
-            'PAGE_UP': '\\x1b[5~',
-            'PAGE_DOWN': '\\x1b[6~',
-            'UP': '\\x1b[A',
-            'DOWN': '\\x1b[B',
-            'LEFT': '\\x1b[D',
-            'RIGHT': '\\x1b[C',
+            'ENTER': '\\x0a',
+            'RETURN': '\\x0a',
+            'END': '\\x1b\\x5b\\x46',
+            'HOME': '\\x1b\\x5b\\x48',
+            'INSERT': '\\x1b\\x5b\\x32\\x7e',
+            'DELETE': '\\x1b\\x5b\\x33\\x7e',
+            'PAGE_UP': '\\x1b\\x5b\\x35\\x7e',
+            'PAGE_DOWN': '\\x1b\\x5b\\x36\\x7e',
+            'UP': '\\x1b\\x5b\\x41',
+            'DOWN': '\\x1b\\x5b\\x42',
+            'LEFT': '\\x1b\\x5b\\x44',
+            'RIGHT': '\\x1b\\x5b\\x43',
             'ESC': '\\x1b',
             'SPACE': '\\x20',
-            'TAB': '\\t',
-            'BACKSPACE': '\\x7f',
+            'TAB': '\\x09',
+            'BACKSPACE': '\\x1b\\x5b\\x33\\x7e',
         }
         with open(key_mapping_config_path, 'w', encoding='utf-8') as configfile:
             config.write(configfile)
@@ -68,7 +68,6 @@ def load_key_mappings():
             decoded_value = value
         key_upper = key.upper()
         key_mappings[key_upper] = decoded_value
-        print(f"Loaded key mapping: {key_upper} -> {repr(decoded_value)}")
 
     return key_mappings
 
@@ -120,6 +119,12 @@ class KeyCapture:
             return self.key_pressed
         return None
 
+    def restore(self):
+        """
+        Restore the original terminal settings.
+        """
+        termios.tcsetattr(self.fd, termios.TCSADRAIN, self.old_settings)
+
 def get_arguments():
     """
     Get command line arguments and return them.
@@ -169,6 +174,11 @@ def get_arguments():
         help="path and name to playbook. Default: "
         + config["DEFAULT"]["playbook_name"],
     )
+    parser.add_argument(
+        "--detect-keys",
+        action="store_true",
+        help="Detect and display key escape sequences for your system.",
+    )
     return parser.parse_args()
 
 def create_config_file():
@@ -176,12 +186,15 @@ def create_config_file():
     Create a config file in the home directory if it is not there already
     """
     home = str(Path.home())
-    if not os.path.isfile(home + "/.config/cliplayer/cliplayer.cfg"):
+    config_file_path = home + "/.config/cliplayer/cliplayer.cfg"
+    if not os.path.isfile(config_file_path):
         os.makedirs(home + "/.config/cliplayer/", exist_ok=True)
         copyfile(
             sys.prefix + "/config/cliplayer.cfg",
             home + "/.config/cliplayer/cliplayer.cfg",
         )
+        print(f"Standard cliplayer.cfg created at: {config_file_path}")
+
 
 def execute_interactive_command(cmd):
     """
@@ -468,6 +481,41 @@ class CliPlayer: # pylint: disable=too-few-public-methods
                     print("Error in command: " + cmd)
         self.cleanup()
 
+def detect_keys():
+    """
+    Detect key escape sequences by capturing user key presses.
+    """
+    print("Detect key mappings on your system to configure the cliplayer keys.\n")
+    print("Press the desired keys. Press 'Ctrl+C' to finish.\n")
+    print("--------------------------------------------------")
+
+    try:
+        key_capture = KeyCapture()
+        while True:
+            key = key_capture.get_key()
+            if key:
+                if key.startswith('\x1b'):
+                    # Display escape sequence in hexadecimal format
+                    escape_sequence = ''.join(['\\x{:02x}'.format(ord(c)) for c in key])
+                    print(f"Escape Sequence: {escape_sequence}")
+                else:
+                    # Display the hexadecimal representation of the key
+                    print(f"Escape Sequence: \\x{ord(key):02x}")
+
+    except KeyboardInterrupt:
+        print("--------------------------------------------------\n")
+        print("Key detection ended.")
+        print("Now put the wanted escape sequence in the ~/.config/cliplayer/key_mappings.cfg file.")
+        print("\nExample:")
+        print("[KEY_MAPPINGS]")
+        print("ENTER = \\x0a\n")
+        print("Then map the key name ~/.config/cliplayer/cliplayer.cfg file.")
+        print("\nExample:")
+        print("next_key = ENTER\n")
+    finally:
+        key_capture.restore()
+        sys.exit(0)
+
 def main():
     """
     Main function that configures and runs the cliplayer
@@ -476,6 +524,9 @@ def main():
     create_config_file()
 
     args = get_arguments()
+
+    if args.detect_keys:
+        detect_keys()
 
     home = str(Path.home())
     config = configparser.ConfigParser(interpolation=None)
