@@ -4,9 +4,6 @@ cliplayer helps to script shell based lectures or screencast trainings. The play
 ## Motivation
 When holding lectures or recording screencast you often need to devide your attention between talking and typing at the same time. This cliplayer helps you to concentrate more on what you want to teach instead of what you need to type.
 
-## Corona Edition 
-It was planed to release the player along with an other project. Since many people are now forced to stay at home, maybe the cliplayer can help some people to make awesome bash tutorials.
-
 ## Installation
 
 `pip install cliplayer`
@@ -35,11 +32,14 @@ It was planed to release the player along with an other project. Since many peop
     -m MAX_SPEED
        Set the max speed of typing one character. Default: 0.15
 
+    --detect-keys
+       Detect and display key escape sequences for your system
+
     playbook
        Path and name of the playbook to execute
 
 
-## Config file
+## Config files
 
 After the first usage, there is a configuration file in the home directory to manipulate the default settings.
 
@@ -47,10 +47,13 @@ After the first usage, there is a configuration file in the home directory to ma
     [DEFAULT]
     prompt = \033[91mCLIplayer Training \033[92m$\033[0m
     playbook_name = ./playbook
-    next_key = enter
-    interactive_key = end
+    next_key = ENTER
+    interactive_key = END
     base_speed = 0.03
     max_speed = 0.15
+
+There is also the file key_mappings.cfg to map the key escape sequences of your system to the key names that are used in the cliplayer.cfg. 
+Use ```cliplayer --detect-keys``` if your system uses other key escape sequences.
 
 ## Playbook Options
 
@@ -163,7 +166,5 @@ Hint
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=bXN00QfzLMs " target="_blank"><img src="http://img.youtube.com/vi/bXN00QfzLMs/0.jpg" alt="CLIplayer training video" width="240" height="180" border="10" /></a>
 
 ## Links
-
-[Key codes for next_key and interactive_key options](https://pynput.readthedocs.io/en/latest/keyboard.html#pynput.keyboard.Key)
 
 [How to create a prompt](https://wiki.archlinux.org/index.php/Bash/Prompt_customization)
