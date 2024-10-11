@@ -1,1 +1,1 @@
-include config/cliplayer.cfg
+recursive-include cliplayer/config *

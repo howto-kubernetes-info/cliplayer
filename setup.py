@@ -1,14 +1,9 @@
-import setuptools
-import os
-from pathlib import Path
+from setuptools import setup, find_packages
 
-with open("README.md", "r") as fh:
+with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
-config_dir = Path("config")
-config_files = [str(path) for path in config_dir.glob("*.cfg")]
-
-setuptools.setup(
+setup(
     name="cliplayer",
     version="0.1.3",
     author="Stephan Gitz",
@@ -17,8 +12,16 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/howto-kubernetes-info/cliplayer",
-    packages=setuptools.find_packages(),
-    scripts=['bin/cliplayer'],
+    packages=find_packages(),
+    include_package_data=True,
+    package_data={
+        'cliplayer': ['config/*.cfg'],
+    },
+    entry_points={
+        'console_scripts': [
+            'cliplayer=cliplayer.cliplayer:main',
+        ],
+    },
     install_requires=[
         'pexpect>=4.9.0'
     ],
@@ -27,6 +30,5 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: POSIX",
     ],
-    python_requires='>=3.6',
-    data_files=[('config/', config_files)],
+    python_requires='>=3.7',
 )

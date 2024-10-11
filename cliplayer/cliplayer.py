@@ -3,7 +3,7 @@
 """
 cliplayer: A module to play playbooks with Bash commands as if they are being typed in real-time.
 """
-
+import importlib.resources as pkg_resources
 import argparse
 import configparser
 import codecs
@@ -16,7 +16,6 @@ import termios
 import select
 import time
 import random
-from shutil import copyfile
 from pathlib import Path
 import pexpect
 
@@ -159,24 +158,25 @@ def get_arguments():
 
 def create_config_files():
     """
-    Create a config file in the home directory if it is not there already
+    Create config files in the home directory if they are not there already
     """
-    home = str(Path.home())
-    config_file_path = home + "/.config/cliplayer/cliplayer.cfg"
-    if not os.path.isfile(config_file_path):
-        os.makedirs(home + "/.config/cliplayer/", exist_ok=True)
-        copyfile(
-            sys.prefix + "/config/cliplayer.cfg",
-            home + "/.config/cliplayer/cliplayer.cfg",
-        )
+
+    home = Path.home()
+    config_dir = home / ".config/cliplayer"
+    config_dir.mkdir(parents=True, exist_ok=True)
+
+    config_file_path = config_dir / "cliplayer.cfg"
+    if not config_file_path.is_file():
+        with pkg_resources.open_text('cliplayer.config', 'cliplayer.cfg') as src, \
+             open(config_file_path, 'w', encoding='utf-8') as dst:
+            dst.write(src.read())
         print(f"Standard cliplayer.cfg created at: {config_file_path}")
 
-    key_mapping_file_path = home + "/.config/cliplayer/key_mappings.cfg"
-    if not os.path.isfile(key_mapping_file_path):
-        copyfile(
-            sys.prefix + "/config/key_mappings.cfg",
-            home + "/.config/cliplayer/key_mappings.cfg",
-        )
+    key_mapping_file_path = config_dir / "key_mappings.cfg"
+    if not key_mapping_file_path.is_file():
+        with pkg_resources.open_text('cliplayer.config', 'key_mappings.cfg') as src, \
+             open(key_mapping_file_path, 'w', encoding='utf-8') as dst:
+            dst.write(src.read())
         print(f"Standard key_mappings.cfg created at: {key_mapping_file_path}")
 
 def execute_interactive_command(cmd):
