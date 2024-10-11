@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="cliplayer",
-    version="0.1.3",
+    version="0.1.4",
     author="Stephan Gitz",
     author_email="pypi@systremix.de",
     description="The cliplayer helps to script shell based lectures and screencast tutorials",

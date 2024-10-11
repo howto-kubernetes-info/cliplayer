@@ -160,7 +160,7 @@ Hint
     $ clone https://github.com/howto-kubernetes-info/cliplayer.git
     $ cd cliplayer
     $ python3 setup.py sdist bdist_wheel
-    $ pip install --force-reinstall dist/cliplayer-0.1.2.tar.gz  # Change the version number to the right version
+    $ pip install --force-reinstall dist/cliplayer-0.1.4.tar.gz  # Change the version number to the right version
 
 ## Video training
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=bXN00QfzLMs " target="_blank"><img src="http://img.youtube.com/vi/bXN00QfzLMs/0.jpg" alt="CLIplayer training video" width="240" height="180" border="10" /></a>
